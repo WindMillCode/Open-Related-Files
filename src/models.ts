@@ -38,7 +38,14 @@ export class WMLOpenRelatedFilesSettingsJSON {
   chosenOption:Partial<{
     name:string,
     fileRegexPredicate:string,
-    searchPaths:Array<string> 
+    setEditorLayout:{
+      orientation:0|1,
+      groups:Array<{
+        groups:WMLOpenRelatedFilesSettingsJSON["chosenOption"]["setEditorLayout"]["groups"],
+        size?:number
+      }>
+    } 
+    searchPaths:Array<string>
     includeGlobs:InfiniteStringArray
     excludeGlobs:Array<string>
   }>

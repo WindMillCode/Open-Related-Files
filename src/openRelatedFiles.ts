@@ -71,11 +71,11 @@ export const openRelatedFiles = async (uri?: vscode.Uri) => {
         return  path.join(rootFolderUri.fsPath,subPath)
       })
 
-      notifyMsg(chosenOption.includeGlobs)
+
       let allFilesInSortedSections:Array<any> = await getAllFilesInSortedSections(chosenOption,chosenOption.includeGlobs, targetPaths, fileUri, mySettingsJson)
       let allFiles = allFilesInSortedSections.flat(Infinity)
-      notifyMsg("files to be opened\n")
-      notifyMsg( allFilesInSortedSections)
+      // notifyMsg("files to be opened\n")
+      // notifyMsg( allFilesInSortedSections)
       if(allFiles.length > 20){
         let myContinue = await vscode.window.showQuickPick(
           ["YES","NO"].map((label)=>{
@@ -90,14 +90,13 @@ export const openRelatedFiles = async (uri?: vscode.Uri) => {
       if(allFilesInSortedSections.length ===0){
         return
       }
-      vscode.commands.executeCommand('workbench.action.closeAllEditors');
-      await openFilesInEditMode(allFilesInSortedSections)
-      getOutputChannel().show(true)
-      let commands =await vscode.commands.getCommands(false)
-      commands = commands.filter((command)=>{
-        return command.includes("workbench.action")
+      let flatfileMatrix= allFiles
+      .map((nullVal,index0)=>{
+        return (allFiles.length-index0)*-1
       })
-      notifyMsg(commands)
+      await vscode.commands.executeCommand('workbench.action.closeAllEditors');
+      await openFilesInEditMode(allFilesInSortedSections,chosenOption,flatfileMatrix)
+      getOutputChannel().show(true)
 
 
 
@@ -165,52 +164,52 @@ async function getChosenOption(mySettingsJson: WMLOpenRelatedFilesSettingsJSON) 
   }
 }
 
-async function openFilesInEditMode(fileMatrix) {
+async function openFilesInEditMode(
+  fileMatrix: WMLOpenRelatedFilesSettingsJSON["chosenOption"]["includeGlobs"],
+  chosenOption: WMLOpenRelatedFilesSettingsJSON["chosenOption"],
+  flatfileMatrix: Array<number>
+) {
   try {
-      if (!fileMatrix || fileMatrix.length === 0) {
-          throw new Error('Invalid array structure. Expected a non-empty 3D array.');
-      }
+    if (!fileMatrix || fileMatrix.length === 0) {
+      throw new Error('Invalid array structure. Expected a non-empty 3D array.');
+    }
 
-      const openAndShowFile = async (filePath, pane, editor, numEditors) => {
-          const document = await vscode.workspace.openTextDocument(filePath);
-          const viewColumn = vscode.ViewColumn.Beside + (numEditors * (pane - 1)) + editor;
-          return vscode.window.showTextDocument(document, { viewColumn, preview: false });
-      };
+    const openAndShowFile = async (filePath, pane, editor, numEditors) => {
+      let document = await vscode.workspace.openTextDocument(filePath);
 
+      // Calculate the correct viewColumn based on the pane, editor, and numEditors
+      let viewColumn =
+        vscode.ViewColumn.Beside +
+        numEditors * pane +
+        editor +
+        (pane > 0 ? 1 : 0); // Adjust the viewColumn for subsequent panes
 
-      vscode.commands.executeCommand(
-        'vscode.setEditorLayout',
-        { orientation: 1, groups: [{ groups: [{content:"abc"}, {},{},{}], size: 0.5 }] }
-      );
+      notifyMsg(viewColumn);
+      return vscode.window.showTextDocument(document, {
+        viewColumn,
+        preview: false,
+        preserveFocus: true,
+      });
+    };
 
-      // notifyMsg(splitCommands)
-      // Promise.all(splitCommands.map((command)=>{
-      //   return vscode.commands.executeCommand(command)
-      // }))
+    await vscode.commands.executeCommand('vscode.setEditorLayout', chosenOption.setEditorLayout);
 
-      return
-      for (let row = 0; row < fileMatrix.length; row++) {
-          const numPanes = fileMatrix[row].length;
+    await vscode.commands.executeCommand('workbench.action.focusFirstEditorGroup');
+    notifyMsg(fileMatrix);
 
-          for (let pane = 0; pane < numPanes; pane++) {
-              const numEditors = fileMatrix[row][pane].length;
-
-              if (numEditors === 0) {
-                  throw new Error('Invalid array structure. Expected a non-empty 1D array for each pane.');
-              }
-
-              for (let editor = 0; editor < numEditors; editor++) {
-                  const filePath = fileMatrix[row][pane][editor];
-                  await openAndShowFile(filePath, pane, editor, numEditors);
-              }
-          }
-      }
-
+    // flatfileMatrix = [1,2,3,4]
+    fileMatrix.forEach(async (row, index0) => {
+      row.forEach(async (pane, index1) => {
+        const numPanes = pane.length;
+        await vscode.commands.executeCommand('workbench.action.focusNextGroup');
+        pane.forEach(async (editor, index2) => {
+          await openAndShowFile(editor, index1, index2, numPanes);
+        });
+      });
+    });
   } catch (error) {
-      console.error(`Error opening files: ${error.message}`);
+    console.error(`Error opening files: ${error.message}`);
   }
 }
-
-
 
 
