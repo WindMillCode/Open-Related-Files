@@ -142,3 +142,12 @@ export let defaultOptionSetting = {
     await saveSetting("defaultOption",value)
   }
 }
+
+export let resetLayoutSetting = {
+  get:async ()=>{
+    return await getSetting("resetLayout")
+  },
+  set:async (value)=>{
+    await saveSetting("resetLayout",value)
+  }
+}

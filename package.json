@@ -36,9 +36,14 @@
           "description": "if set to true auto opens all related files if switching to an unrelated false, false disables this"
         },
         "windmillcode-open-related-files.defaultOption": {
+          "type": "object",
+          "default": null,
+          "description": "the default option to be used in the workspace"
+        },
+        "windmillcode-open-related-files.resetLayout": {
           "type": "boolean",
           "default": false,
-          "description": "the default option to be used in the workspace"
+          "description": "set to true to get a fresh start working on files set to false to open new related files along with the current files"
         }
       }
     },
@@ -53,7 +58,11 @@
       },
       {
         "command": "windmillcode-open-related-files.toggleAutoOpen",
-        "title": "Windmillcode Open Related Files: Auto Open"
+        "title": "Windmillcode Open Related Files: Toggle Auto Open"
+      },
+      {
+        "command": "windmillcode-open-related-files.toggleResetLayout",
+        "title": "Windmillcode Open Related Files: Toggle Reset Layout"
       }
     ]
   },

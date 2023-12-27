@@ -17,14 +17,23 @@ Hold (Cmd+Shift) Hit P for mac
 | Title | Command | Description |
 | ----------- | ------- | ----------- |
 | Windmillcode Open Related Files: Open | `windmillcode-open-related-files.openRelatedFiles` | When auto open is disabled opens the related files according to the default option |
-| Windmillcode Open Related Files: Set Default Option | `windmillcode-open-related-files.setDefaultOption` | Sets the default option of related file to work with |
-| Windmillcode Open Related Files: Auto Open | `windmillcode-open-related-files.toggleAutoOpen` | When an editor is selected,opened, focused, if the file matches the matchers in the default option opens the relative files if not does nothing |
+| Windmillcode Open Related Files: Set Default Option | `windmillcode-open-related-files.setDefaultOption` | Sets the default option of related file to work with  |
+| Windmillcode Open Related Files: Toggle Auto Open | `windmillcode-open-related-files.toggleAutoOpen` | When an editor is selected, opened, focused, if the file matches the matchers in the default option opens the relative files if not does nothing |
+| Windmillcode Open Related Files: Toggle Reset Layout | `windmillcode-open-related-files.toggleResetLayout` | When an editor is selected whether to close all files and start over with the selected files or keep preivous files open and continue to edit |
+
+# Settings
+
+| Vscode Setting | Type | Default | Description |
+| ------- | ---- | ------- | ----------- |
+| `windmillcode-open-related-files.autoOpen` | boolean | `false` | If set to `true`, auto opens all related files when switching to an unrelated file. If set to `false`, auto-open is disabled. |
+| `windmillcode-open-related-files.defaultOption` | WMLOpenRelatedFilesSettingsJSON["chosenOption"] | `null` | The default option to be used to open related files. (Tip use the command to set the default setting before manually editing so you can see the shape) |
+| `windmillcode-open-related-files.resetLayout` | boolean | `false` | If set to true closes editors with new editors set to false to continue with current files in layout while opening new files |
 
 
 
 # Docs
 
-## class WMLOpenRelatedFilesSettingsJSON
+## WMLOpenRelatedFiles JSON Settings
 
 | **Name**               | **Type**                                    | **Default Value**                              | **Description**                                                                                               |
 |------------------------|---------------------------------------------|-----------------------------------------------|-----------------------------------------------------------------------------------------------------------------|

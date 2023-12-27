@@ -1,6 +1,6 @@
 import * as vscode from 'vscode'
 
-import { editorChangeDisposable, openRelatedFiles,setDefaultOption,toggleAutoOpen } from './openRelatedFiles'
+import { editorChangeDisposable, openRelatedFiles,setDefaultOption,toggleAutoOpen, toggleResetLayout } from './openRelatedFiles'
 import { autoOpenSetting, getSettingsJSON, notifyError, notifyMsg } from './functions'
 
 export  function activate(context: vscode.ExtensionContext) {
@@ -25,6 +25,13 @@ export  function activate(context: vscode.ExtensionContext) {
     vscode.commands.registerCommand(
       'windmillcode-open-related-files.toggleAutoOpen',
       toggleAutoOpen,
+    ),
+  )
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      'windmillcode-open-related-files.toggleResetLayout',
+      toggleResetLayout,
     ),
   )
 }

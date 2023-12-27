@@ -1,5 +1,5 @@
 import * as vscode from 'vscode'
-import {  autoOpenSetting, deepCopy, defaultOptionSetting, getActiveDocumentUri, getOutputChannel, getRootFolderUri, getSettingsJSON, listFilesRecursively, notifyError, notifyMsg } from './functions'
+import {  autoOpenSetting, deepCopy, defaultOptionSetting, getActiveDocumentUri, getOutputChannel, getRootFolderUri, getSettingsJSON, listFilesRecursively, notifyError, notifyMsg, resetLayoutSetting } from './functions'
 import path = require('path')
 import fg = require('fast-glob')
 import { WMLOpenRelatedFilesSettingsJSON } from './models'
@@ -152,10 +152,14 @@ async function openFilesInEditMode(
     };
 
     // Notify with fileMatrix
-    vscode.commands.executeCommand(
-      "vscode.setEditorLayout",
-      chosenOption.setEditorLayout
-    )
+    let resetLayout = await resetLayoutSetting.get()
+    if(resetLayout === true){
+      vscode.commands.executeCommand(
+        "vscode.setEditorLayout",
+        chosenOption.setEditorLayout
+      )
+    }
+
     const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
     let  numPanes = 0;
     for (const [index0, row] of fileMatrix.entries()) {
@@ -249,13 +253,11 @@ export const openRelatedFiles = async (uri?: vscode.Uri) => {
         return
       }
 
-
-
-
-      await vscode.commands.executeCommand('workbench.action.closeAllEditors');
+      let resetLayout = await resetLayoutSetting.get()
+      if(resetLayout === true){
+        await vscode.commands.executeCommand('workbench.action.closeAllEditors');
+      }
       await openFilesInEditMode(allFilesInSortedSections,chosenOption)
-
-
 
     }
     else{
@@ -292,6 +294,20 @@ export const toggleAutoOpen = async (uri?: vscode.Uri)=>{
     await autoOpenSetting.set(myContinue.label ==="YES")
   }
 }
+
+export const toggleResetLayout = async (uri?: vscode.Uri)=>{
+  let myContinue = await vscode.window.showQuickPick(
+    ["YES","NO"].map((label)=>{
+      return {label}
+    }),{
+    placeHolder:"YES to reset layout NO to continuously open related files when selecting unrelated files"
+  })
+  if(myContinue){
+    await resetLayoutSetting.set(myContinue.label ==="YES")
+  }
+}
+
+
 
 
 
