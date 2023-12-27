@@ -10,5 +10,7 @@ Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how 
 * section ## [0.0.1] - 2023-12-26
 
 
-## [0.0.1] - 2023-12-26
+## [0.0.1] - 2023-12-27
+* Extension made available to the public ready for use
+
 

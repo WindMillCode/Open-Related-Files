@@ -2,6 +2,42 @@
 
 
 # Usage
+* Open the file according to your file fileRegexPredicate in settings.json["windmillcode-open-related-files]["options"]["fileRegexPredicate"]
+
+* Open Command Pallellete
+Hold (Ctrl+ Shift ) Hit P for windows
+Hold (Cmd+Shift) Hit P for mac
+
+* type-in and select Windmillcode: Open related files
+* select the options you have set in settings.json["windmillcode-open-related-files]["options"]
+* vscode will repopulate the workbench according to the files globstrings and matrix you have specified in settings.json["windmillcode-open-related-files]["options"]["setEditorLayout"] and  settings.json["windmillcode-open-related-files]["options"]["includeGlobs"]
 
 
 # Docs
+
+## class WMLOpenRelatedFilesSettingsJSON
+
+| **Name**               | **Type**                                    | **Default Value**                              | **Description**                                                                                               |
+|------------------------|---------------------------------------------|-----------------------------------------------|-----------------------------------------------------------------------------------------------------------------|
+| `excludeGlobs`         | `Array<string>`                             | `["**/node_modules/**", "**/site-packages/**", "**/.git/**"]` | An array of globs representing files or directories to be excluded when opening related files. for all options provided by the developer               |
+| `chosenOption`              | `WMLOpenRelatedFilesSettingsJSON.chosenOption`          | `undefined`                   | The chosen option the developer wants to use when working with files
+| `options`              | `Array<Partial<WMLOpenRelatedFilesSettingsJSON["chosenOption"]>>`          | `[ { "name": "Disable" } ]`                   | An array of options for opening related files, each having a name and potentially additional settings based on the chosen option.                                        |
+
+### Property WMLOpenRelatedFilesSettingsJSON.chosenOption
+| **Name**               | **Type**                                    | **Default Value**                              | **Description**                                                                                               |
+|------------------------|---------------------------------------------|-----------------------------------------------|-----------------------------------------------------------------------------------------------------------------|
+| `name`                | `string`                                                                                                   | `undefined`       | The name of the chosen option for opening related files.                                                                                   |
+| `fileRegexPredicate`  | `string`                                                                                                   | `undefined`       | A regexString representing that the option should trigger if the file that matches the regex is in focus on the editor workbench|
+| `setEditorLayout`     | `WMLOpenRelatedFilesSettingsJSON.chosenOption.setEditorLayout` | `undefined`       | An object specifying the layout of the editor when opening related files, including orientation and groups with optional size.          |
+| `searchPaths`         | `Array<string>`                                                                                            | `undefined`       | An array of paths to be used for searching related files. so the whole project is not searched                                                                                   |
+| `includeGlobs`        | `InfiniteStringArray`                                                                                     | `undefined`       | A matrix of globs representing files to be opened having the same dimensions as WMLOpenRelatedFilesSettingsJSONchosenOption[setEditorLayout"]["groups"] if there are more dimensions then additional editor groups may be opened breaking the intended layout. if dimensions are less than setEditorLayout then vscode placeholders would be left the leftover editor groups                                              |
+| `excludeGlobs`        | `WMLOpenRelatedFilesSettingsJSON["excludeGlobs"]`                                                          | `undefined`       | An array of globs representing files or directories to be excluded when opening related files, inherited from the parent class's property. |
+
+
+#### Property WMLOpenRelatedFilesSettingsJSON.chosenOption.setEditorLayout
+| **Name**           | **Type**                                                                                | **Default Value** | **Description**                                                                                                                                                                            |
+|--------------------|-----------------------------------------------------------------------------------------|-------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `orientation`      | `0 \| 1`                                                                                | `undefined`       | layout direction. `0` for left-to-right downward (horizontal) `1` from top-to-bottom leftward layout (vertical).                                    |
+| `groups`           | `Array<{ groups: WMLOpenRelatedFilesSettingsJSON["chosenOption"]["setEditorLayout"]["groups"], size?: number }>` | `undefined`       | A multi-dimensional array of objects specifying the editor layout matrix. Each group can contain further nested groups and an optional size parameter for specifying the size of the group. |
+| `groups.groups`    | `WMLOpenRelatedFilesSettingsJSON["chosenOption"]["setEditorLayout"]["groups"]`           | `undefined`       | Recursive definition of the groups within the editor layout.                                                                                                                                |
+| `groups.size`      | `number `                                                                   | `undefined`       | An optional parameter specifying the size of the group within the editor layout.                                                                                                           |

@@ -47,7 +47,7 @@ export class WMLOpenRelatedFilesSettingsJSON {
     }
     searchPaths:Array<string>
     includeGlobs:InfiniteStringArray
-    excludeGlobs:Array<string>
+    excludeGlobs:WMLOpenRelatedFilesSettingsJSON["excludeGlobs"]
   }>
   options:Array<WMLOpenRelatedFilesSettingsJSON["chosenOption"]> = [
     {

@@ -182,7 +182,7 @@ async function openFilesInEditMode(
 
       notifyMsg(finalViewColumn);
       return vscode.window.showTextDocument(document, {
-        viewColumn:myViewColum??viewColumn,
+        viewColumn:finalViewColumn,
         preview: false
       });
     };
