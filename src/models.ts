@@ -37,6 +37,7 @@ export class WMLOpenRelatedFilesSettingsJSON {
 
   chosenOption:Partial<{
     name:string,
+    
     fileRegexPredicate:string,
     subStringRemovalArray:Array<string>
     setEditorLayout:{

@@ -114,3 +114,21 @@ export function listFilesRecursively(dir, ignoreEntity=[]) {
 export let   deepCopy=(obj)=>{
   return JSON.parse(JSON.stringify(obj));
 }
+
+
+async function  getSetting(key) {
+  return await vscode.workspace.getConfiguration().get('windmillcode-open-related-files.'+key);
+}
+
+async function saveSetting(key,value) {
+  await vscode.workspace.getConfiguration().update('windmillcode-open-related-files.'+key, value);
+}
+
+export let autoOpenSetting = {
+  get:async ()=>{
+    return await getSetting("autoOpen")
+  },
+  set:async (value)=>{
+    await saveSetting("autoOpen",value)
+  }
+}

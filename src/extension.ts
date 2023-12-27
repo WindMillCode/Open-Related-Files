@@ -1,6 +1,6 @@
 import * as vscode from 'vscode'
 
-import { openRelatedFiles } from './openRelatedFiles'
+import { editorChangeDisposable, openRelatedFiles,toggleAutoOpen } from './openRelatedFiles'
 import { getSettingsJSON, notifyError } from './functions'
 
 export function activate(context: vscode.ExtensionContext) {
@@ -12,8 +12,16 @@ export function activate(context: vscode.ExtensionContext) {
       'windmillcode-open-related-files.openRelatedFiles',
       openRelatedFiles,
     ),
+  )
 
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      'windmillcode-open-related-files.autoOpen',
+      toggleAutoOpen,
+    ),
   )
 }
 
-export function deactivate() {}
+export function deactivate() {
+  editorChangeDisposable.dispose()
+}

@@ -1,6 +1,6 @@
 {
   "name": "windmillcode-open-related-files",
-  "displayName": "Open Related Files",
+  "displayName": "Windmillcode: Open Related Files",
   "description": "",
   "version": "1.85.1000",
   "publisher": "windmillcode-publisher-0",
@@ -16,8 +16,7 @@
     "Other"
   ],
   "activationEvents": [
-    "onStartupFinished",
-    "onCommand:windmillcode-open-related-files.openRelatedFiles"
+    "onStartupFinished"
   ],
   "main": "./out/extension",
   "keywords": [
@@ -28,10 +27,28 @@
     "browser"
   ],
   "contributes": {
+    "configuration": {
+      "title":"Windmillcode: Open Related Files",
+      "properties": {
+        "windmillcode-open-related-files.autoOpen":{
+          "type":"boolean",
+          "default":false,
+          "description": "if set to true auto opens all related files if switching to an unrelated false, false disables this"
+        }
+      }
+    },
     "commands": [
       {
         "command": "windmillcode-open-related-files.openRelatedFiles",
-        "title": "Windmillcode: Open Related Files"
+        "title": "Windmillcode Open Related Files: Open"
+      },
+      {
+        "command": "windmillcode-open-related-files.setDefaultOption",
+        "title": "Windmillcode Open Related Files: Set Default Option"
+      },
+      {
+        "command": "windmillcode-open-related-files.autoOpen",
+        "title": "Windmillcode Open Related Files: Auto Open"
       }
     ]
   },

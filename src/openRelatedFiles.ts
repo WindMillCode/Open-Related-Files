@@ -1,10 +1,43 @@
 import * as vscode from 'vscode'
-import { deepCopy, getActiveDocumentUri, getOutputChannel, getRootFolderUri, getSettingsJSON, listFilesRecursively, notifyError, notifyMsg } from './functions'
+import {  autoOpenSetting, deepCopy, getActiveDocumentUri, getOutputChannel, getRootFolderUri, getSettingsJSON, listFilesRecursively, notifyError, notifyMsg } from './functions'
 import path = require('path')
 import fg = require('fast-glob')
 import { WMLOpenRelatedFilesSettingsJSON } from './models'
 
+let defaultOption:WMLOpenRelatedFilesSettingsJSON["chosenOption"] = null
 
+let currentEditorRelationshipString = ""
+let openRelatedFilesLock = false
+
+function trimToGetRelationshipString(fileUri: vscode.Uri,chosenOption: WMLOpenRelatedFilesSettingsJSON["chosenOption"],) {
+  let fileName = path.basename(fileUri.path)
+  let fileNameBasis = ""
+  if (chosenOption.fileRegexPredicate) {
+    fileNameBasis = fileName.replace(
+      new RegExp(chosenOption.fileRegexPredicate), ''
+    )
+  }
+  else if (chosenOption.subStringRemovalArray) {
+    fileNameBasis = chosenOption.subStringRemovalArray
+      .reduce((acc, val) => {
+        return acc.replace(val, "")
+      }, fileName)
+  }
+  else {
+    vscode.window.showErrorMessage(`
+        missing fileRegexPredicate and subStringRemovalArray
+        `, {
+      modal: true,
+      detail: `Please provide a fileRegexPredicate or
+          subStringRemovalArray for the option from your
+          settings.json or workspace file. If you needed
+          assitance watch this video`
+    })
+  }
+  currentEditorRelationshipString = fileNameBasis
+  return fileNameBasis
+
+}
 
 
 const getFileNamesToSearchAndPathToIgnore = async (
@@ -35,103 +68,6 @@ const getFileNamesToSearchAndPathToIgnore = async (
 
 }
 
-
-
-export const openRelatedFiles = async (uri?: vscode.Uri) => {
-  try {
-    if (!vscode.workspace.workspaceFolders) {
-      vscode.window.showInformationMessage('No folder or workspace opened')
-      return
-    }
-
-
-    let mySettingsJson = new WMLOpenRelatedFilesSettingsJSON(
-      deepCopy(getSettingsJSON("windmillcode-open-related-files") ?? {})
-    )
-    const rootFolderUri = getRootFolderUri() as vscode.Uri
-    const fileUri = uri || getActiveDocumentUri()
-
-    if (fileUri?.scheme !== 'untitled' &&  fileUri) {
-
-
-      await getChosenOption(mySettingsJson)
-      let {chosenOption} = mySettingsJson
-      if(chosenOption.name ==="Disable"){
-        return
-      }
-      let fileName = path.basename(fileUri.path)
-      let fileNameBasis =""
-      if(chosenOption.fileRegexPredicate){
-        fileNameBasis = fileName.replace(
-          new RegExp(chosenOption.fileRegexPredicate),''
-        )
-      }
-      else if(chosenOption.subStringRemovalArray){
-        fileNameBasis = chosenOption.subStringRemovalArray
-        .reduce((acc,val)=>{
-          return acc.replace(val,"")
-        },fileName)
-      }
-      else{
-        vscode.window.showErrorMessage(`
-        missing fileRegexPredicate and subStringRemovalArray
-        `,{
-          modal:true,
-          detail:`Please provide a fileRegexPredicate or
-          subStringRemovalArray for the option from your
-          settings.json or workspace file. If you needed
-          assitance watch this video`
-        })
-      }
-
-      chosenOption.includeGlobs= updateGlobPlaceholders(chosenOption.includeGlobs, fileNameBasis)
-
-
-
-      let targetPaths = chosenOption.searchPaths.map((subPath)=>{
-        return  path.join(rootFolderUri.fsPath,subPath)
-      })
-
-
-      let allFilesInSortedSections:Array<any> = await getAllFilesInSortedSections(chosenOption,chosenOption.includeGlobs, targetPaths, fileUri, mySettingsJson)
-      let allFiles = allFilesInSortedSections.flat(Infinity)
-      notifyMsg("files to be opened")
-      notifyMsg( allFilesInSortedSections)
-      if(allFiles.length > 20){
-        let myContinue = await vscode.window.showQuickPick(
-          ["YES","NO"].map((label)=>{
-            return {label}
-          }),{
-          placeHolder:"This will open a huge amount of files and crash vscode are you sure about this"
-        })
-        if(!myContinue){
-          return
-        }
-      }
-      if(allFilesInSortedSections.length ===0){
-        return
-      }
-
-      getOutputChannel().clear()
-      getOutputChannel().show(true)
-      await vscode.commands.executeCommand('workbench.action.closeAllEditors');
-      await openFilesInEditMode(allFilesInSortedSections,chosenOption)
-
-
-
-    }
-    else{
-      vscode.window.showErrorMessage("Please open a file in the editor and select it first (meaning click on the code area to put into focus)")
-    }
-
-
-
-  } catch (e: any) {
-    vscode.window.showErrorMessage(e.message)
-  }
-}
-
-
 async function getAllFilesInSortedSections(
   chosenOption:WMLOpenRelatedFilesSettingsJSON["chosenOption"],
   includeGlobs:WMLOpenRelatedFilesSettingsJSON["chosenOption"]["includeGlobs"],
@@ -158,14 +94,14 @@ async function getAllFilesInSortedSections(
 
 function updateGlobPlaceholders(
   includeGlobs:WMLOpenRelatedFilesSettingsJSON["chosenOption"]["includeGlobs"],
-  fileNameBasis: string)
+  relationshipString: string)
 {
   return includeGlobs.map((globString) => {
 
     if (Array.isArray(globString)) {
-      return updateGlobPlaceholders(globString,fileNameBasis)
+      return updateGlobPlaceholders(globString,relationshipString)
     }
-    return globString.replace("FILE_NAME_BASIS", fileNameBasis)
+    return globString.replace("FILE_NAME_BASIS", relationshipString)
   })
 }
 
@@ -175,9 +111,9 @@ async function getChosenOption(mySettingsJson: WMLOpenRelatedFilesSettingsJSON) 
       return { label: option.name }
     })
     let name = await vscode.window.showQuickPick(options, {
-      placeHolder: "Select what you are working on"
+      placeHolder: "Select what you are working on (this will become your default option)"
     })
-    mySettingsJson.chosenOption = mySettingsJson.options.find((option) => {
+    mySettingsJson.chosenOption = defaultOption = mySettingsJson.options.find((option) => {
       return option.name === name.label
     })
   }
@@ -230,8 +166,138 @@ async function openFilesInEditMode(
     console.error(`Error opening files: ${error.message}`);
   }
 }
+let warnWhenTooManyFiles = async (allFilesInSortedSections:Array<any>)=>{
+  let allFiles = allFilesInSortedSections.flat(Infinity)
+  notifyMsg("files to be opened")
+  notifyMsg( allFilesInSortedSections)
+  if(allFiles.length > 20){
+    let myContinue = await vscode.window.showQuickPick(
+      ["YES","NO"].map((label)=>{
+        return {label}
+      }),{
+      placeHolder:"This will open a huge amount of files and crash vscode are you sure about this"
+    })
+    if(!myContinue){
+      return true
+    }
+  }
+  if(allFiles.length ===0){
+    return true
+  }
+}
+
+export const openRelatedFiles = async (uri?: vscode.Uri) => {
+  openRelatedFilesLock = true
+  try {
+    if (!vscode.workspace.workspaceFolders) {
+      vscode.window.showInformationMessage('No folder or workspace opened')
+      return
+    }
 
 
+    let mySettingsJson = new WMLOpenRelatedFilesSettingsJSON(
+      deepCopy(getSettingsJSON("windmillcode-open-related-files") ?? {})
+    )
+    const rootFolderUri = getRootFolderUri() as vscode.Uri
+    const fileUri = uri ?? getActiveDocumentUri()
+
+    if (fileUri?.scheme !== 'untitled' &&  fileUri) {
+
+
+      let chosenOption
+      let autoOpen = await autoOpenSetting.get()
+
+      if(autoOpen && defaultOption){
+        chosenOption = defaultOption
+      }
+      else{
+        await getChosenOption(mySettingsJson)
+        chosenOption = mySettingsJson.chosenOption
+      }
+      if(chosenOption.name ==="Disable"){
+        return
+      }
+      let relationshipString = trimToGetRelationshipString(fileUri, chosenOption)
+      notifyMsg("after viewing option "+relationshipString)
+      let includeGlobs= updateGlobPlaceholders(chosenOption.includeGlobs, relationshipString)
+      notifyMsg(includeGlobs)
+
+
+      let targetPaths = chosenOption.searchPaths.map((subPath)=>{
+        return  path.join(rootFolderUri.fsPath,subPath)
+      })
+
+
+      let allFilesInSortedSections:Array<any> = await getAllFilesInSortedSections(chosenOption,includeGlobs, targetPaths, fileUri, mySettingsJson)
+      if(await warnWhenTooManyFiles(allFilesInSortedSections)){
+        return
+      }
+
+
+      getOutputChannel().show(true)
+      await vscode.commands.executeCommand('workbench.action.closeAllEditors');
+      await openFilesInEditMode(allFilesInSortedSections,chosenOption)
+
+
+
+    }
+    else{
+      vscode.window.showErrorMessage("Please open a file in the editor and select it first (meaning click on the code area to put into focus)")
+    }
+
+
+
+  } catch (e: any) {
+
+    vscode.window.showErrorMessage(e.message)
+  } finally{
+    openRelatedFilesLock = false
+  }
+}
+
+
+
+
+export const toggleAutoOpen = async (uri?: vscode.Uri)=>{
+  let myContinue = await vscode.window.showQuickPick(
+    ["YES","NO"].map((label)=>{
+      return {label}
+    }),{
+    placeHolder:"Select YES to auto open related files, Select NO to disallow"
+  })
+  if(myContinue){
+    await autoOpenSetting.set(myContinue.label ==="YES")
+  }
+}
+
+
+
+export const editorChangeDisposable = vscode.window.onDidChangeActiveTextEditor(async (editor) => {
+
+  if(await autoOpenSetting.get() && editor){
+      if(openRelatedFilesLock){
+        return
+      }
+      const fileName = path.basename(editor.document.fileName);
+      let prevEditorRelationshipString =  currentEditorRelationshipString
+      let newEditorRelationshipString = trimToGetRelationshipString(editor.document.uri,defaultOption)
+      notifyMsg("Prev Value: "+prevEditorRelationshipString)
+      notifyMsg("Next Value: "+newEditorRelationshipString)
+      if(currentEditorRelationshipString !==""){
+        if(prevEditorRelationshipString === newEditorRelationshipString ){
+          return
+        }
+      }
+
+      notifyMsg("changing layout ")
+      openRelatedFiles(editor.document.uri)
+      notifyMsg(`Active editor changed. File: ${fileName}`);
+
+
+
+  }
+
+});
 
 
 
