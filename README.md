@@ -2,7 +2,7 @@
 
 
 # Usage
-* Open the file according to your file fileRegexPredicate in settings.json["windmillcode-open-related-files]["options"]["fileRegexPredicate"]
+* Open the file according to your file fileRegexPredicate or subStringRemovalArray in settings.json["windmillcode-open-related-files]["options"]["fileRegexPredicate","subStringRemovalArray"]
 
 * Open Command Pallellete
 Hold (Ctrl+ Shift ) Hit P for windows
@@ -27,7 +27,8 @@ Hold (Cmd+Shift) Hit P for mac
 | **Name**               | **Type**                                    | **Default Value**                              | **Description**                                                                                               |
 |------------------------|---------------------------------------------|-----------------------------------------------|-----------------------------------------------------------------------------------------------------------------|
 | `name`                | `string`                                                                                                   | `undefined`       | The name of the chosen option for opening related files.                                                                                   |
-| `fileRegexPredicate`  | `string`                                                                                                   | `undefined`       | A regexString representing that the option should trigger if the file that matches the regex is in focus on the editor workbench|
+| `fileRegexPredicate`  | `regexString ,(meaning the string will be used to create a regexp)`                                                                                                   | `undefined`       | A regexString representing that the option should trigger if the file that matches the regex is in focus on the editor workbench|
+| `subStringRemovalArray`  | `Array<string>`                                                                                                   | `undefined`       | Same feature as fileRegexPredicate but uses an array of regular substrings to be used to trim the file name. |
 | `setEditorLayout`     | `WMLOpenRelatedFilesSettingsJSON.chosenOption.setEditorLayout` | `undefined`       | An object specifying the layout of the editor when opening related files, including orientation and groups with optional size.          |
 | `searchPaths`         | `Array<string>`                                                                                            | `undefined`       | An array of paths to be used for searching related files. so the whole project is not searched                                                                                   |
 | `includeGlobs`        | `InfiniteStringArray`                                                                                     | `undefined`       | A matrix of globs representing files to be opened having the same dimensions as WMLOpenRelatedFilesSettingsJSONchosenOption[setEditorLayout"]["groups"] if there are more dimensions then additional editor groups may be opened breaking the intended layout. if dimensions are less than setEditorLayout then vscode placeholders would be left the leftover editor groups. In addition use FILE_NAME_BASIS in the global to specify to the extension how to use the fileRegexPredicate to update the globString to narrow down the possible results to the file that you want to deal with                                                |
