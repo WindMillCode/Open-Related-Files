@@ -51,7 +51,7 @@ export const openRelatedFiles = async (uri?: vscode.Uri) => {
     const rootFolderUri = getRootFolderUri() as vscode.Uri
     const fileUri = uri || getActiveDocumentUri()
 
-    if (fileUri?.scheme !== 'untitled') {
+    if (fileUri?.scheme !== 'untitled' &&  fileUri) {
 
 
       await getChosenOption(mySettingsJson)
@@ -91,8 +91,14 @@ export const openRelatedFiles = async (uri?: vscode.Uri) => {
         return
       }
       vscode.commands.executeCommand('workbench.action.closeAllEditors');
-      openFilesInEditMode(allFilesInSortedSections)
+      await openFilesInEditMode(allFilesInSortedSections)
       getOutputChannel().show(true)
+      let commands =await vscode.commands.getCommands(false)
+      commands = commands.filter((command)=>{
+        return command.includes("workbench.action")
+      })
+      notifyMsg(commands)
+
 
 
     }
@@ -167,17 +173,24 @@ async function openFilesInEditMode(fileMatrix) {
 
       const openAndShowFile = async (filePath, pane, editor, numEditors) => {
           const document = await vscode.workspace.openTextDocument(filePath);
-          const viewColumn = vscode.ViewColumn.Beside + (numEditors * (pane-1)) + editor;
+          const viewColumn = vscode.ViewColumn.Beside + (numEditors * (pane - 1)) + editor;
           return vscode.window.showTextDocument(document, { viewColumn, preview: false });
       };
 
-      // Iterate over the dimensions dynamically
+
+      vscode.commands.executeCommand(
+        'vscode.setEditorLayout',
+        { orientation: 1, groups: [{ groups: [{content:"abc"}, {},{},{}], size: 0.5 }] }
+      );
+
+      // notifyMsg(splitCommands)
+      // Promise.all(splitCommands.map((command)=>{
+      //   return vscode.commands.executeCommand(command)
+      // }))
+
+      return
       for (let row = 0; row < fileMatrix.length; row++) {
           const numPanes = fileMatrix[row].length;
-
-          if (numPanes === 0) {
-              throw new Error('Invalid array structure. Expected a non-empty 2D array for each row.');
-          }
 
           for (let pane = 0; pane < numPanes; pane++) {
               const numEditors = fileMatrix[row][pane].length;
@@ -197,5 +210,7 @@ async function openFilesInEditMode(fileMatrix) {
       console.error(`Error opening files: ${error.message}`);
   }
 }
+
+
 
 
