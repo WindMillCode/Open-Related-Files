@@ -234,7 +234,7 @@ export const openRelatedFiles = async (uri?: vscode.Uri) => {
       }
 
 
-      getOutputChannel().show(true)
+      // getOutputChannel().show(true)
       await vscode.commands.executeCommand('workbench.action.closeAllEditors');
       await openFilesInEditMode(allFilesInSortedSections,chosenOption)
 
@@ -274,24 +274,30 @@ export const toggleAutoOpen = async (uri?: vscode.Uri)=>{
 
 export const editorChangeDisposable = vscode.window.onDidChangeActiveTextEditor(async (editor) => {
 
+
   if(await autoOpenSetting.get() && editor){
       if(openRelatedFilesLock){
         return
       }
       const fileName = path.basename(editor.document.fileName);
-      let prevEditorRelationshipString =  currentEditorRelationshipString
-      let newEditorRelationshipString = trimToGetRelationshipString(editor.document.uri,defaultOption)
-      notifyMsg("Prev Value: "+prevEditorRelationshipString)
-      notifyMsg("Next Value: "+newEditorRelationshipString)
-      if(currentEditorRelationshipString !==""){
-        if(prevEditorRelationshipString === newEditorRelationshipString ){
-          return
+      try {
+        let prevEditorRelationshipString =  currentEditorRelationshipString
+        let newEditorRelationshipString = trimToGetRelationshipString(editor.document.uri,defaultOption)
+        // notifyMsg("Prev Value: "+prevEditorRelationshipString)
+        // notifyMsg("Next Value: "+newEditorRelationshipString)
+        if(currentEditorRelationshipString !==""){
+          if(prevEditorRelationshipString === newEditorRelationshipString ){
+            return
+          }
         }
+
+      } finally {
+        notifyMsg("changing layout ")
+        openRelatedFiles(editor.document.uri)
+        notifyMsg(`Active editor changed. File: ${fileName}`);
       }
 
-      notifyMsg("changing layout ")
-      openRelatedFiles(editor.document.uri)
-      notifyMsg(`Active editor changed. File: ${fileName}`);
+
 
 
 

@@ -1,9 +1,9 @@
 import * as vscode from 'vscode'
 
 import { editorChangeDisposable, openRelatedFiles,toggleAutoOpen } from './openRelatedFiles'
-import { getSettingsJSON, notifyError } from './functions'
+import { autoOpenSetting, getSettingsJSON, notifyError, notifyMsg } from './functions'
 
-export function activate(context: vscode.ExtensionContext) {
+export  function activate(context: vscode.ExtensionContext) {
 
 
 
