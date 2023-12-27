@@ -60,9 +60,30 @@ export const openRelatedFiles = async (uri?: vscode.Uri) => {
         return
       }
       let fileName = path.basename(fileUri.path)
-      let fileNameBasis = fileName.replace(
-        new RegExp(chosenOption.fileRegexPredicate),''
-      )
+      let fileNameBasis =""
+      if(chosenOption.fileRegexPredicate){
+        fileNameBasis = fileName.replace(
+          new RegExp(chosenOption.fileRegexPredicate),''
+        )
+      }
+      else if(chosenOption.subStringRemovalArray){
+        fileNameBasis = chosenOption.subStringRemovalArray
+        .reduce((acc,val)=>{
+          return acc.replace(val,"")
+        },fileName)
+      }
+      else{
+        vscode.window.showErrorMessage(`
+        missing fileRegexPredicate and subStringRemovalArray
+        `,{
+          modal:true,
+          detail:`Please provide a fileRegexPredicate or
+          subStringRemovalArray for the option from your
+          settings.json or workspace file. If you needed
+          assitance watch this video`
+        })
+      }
+
       chosenOption.includeGlobs= updateGlobPlaceholders(chosenOption.includeGlobs, fileNameBasis)
 
 
@@ -74,8 +95,8 @@ export const openRelatedFiles = async (uri?: vscode.Uri) => {
 
       let allFilesInSortedSections:Array<any> = await getAllFilesInSortedSections(chosenOption,chosenOption.includeGlobs, targetPaths, fileUri, mySettingsJson)
       let allFiles = allFilesInSortedSections.flat(Infinity)
-      // notifyMsg("files to be opened\n")
-      // notifyMsg( allFilesInSortedSections)
+      notifyMsg("files to be opened")
+      notifyMsg( allFilesInSortedSections)
       if(allFiles.length > 20){
         let myContinue = await vscode.window.showQuickPick(
           ["YES","NO"].map((label)=>{
@@ -90,10 +111,8 @@ export const openRelatedFiles = async (uri?: vscode.Uri) => {
       if(allFilesInSortedSections.length ===0){
         return
       }
-      let flatfileMatrix= allFiles
-      .map((nullVal,index0)=>{
-        return (allFiles.length-index0)*-1
-      })
+
+      getOutputChannel().clear()
       getOutputChannel().show(true)
       await vscode.commands.executeCommand('workbench.action.closeAllEditors');
       await openFilesInEditMode(allFilesInSortedSections,chosenOption)
@@ -180,7 +199,6 @@ async function openFilesInEditMode(
 
       let finalViewColumn = myViewColum??viewColumn
 
-      notifyMsg(finalViewColumn);
       return vscode.window.showTextDocument(document, {
         viewColumn:finalViewColumn,
         preview: false
