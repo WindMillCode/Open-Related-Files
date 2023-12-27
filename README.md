@@ -1,4 +1,4 @@
-# Open Related Files
+# Windmillcode Open Related Files
 
 
 # Usage
@@ -11,6 +11,15 @@ Hold (Cmd+Shift) Hit P for mac
 * type-in and select Windmillcode: Open related files
 * select the options you have set in settings.json["windmillcode-open-related-files]["options"]
 * vscode will repopulate the workbench according to the files globstrings and matrix you have specified in settings.json["windmillcode-open-related-files]["options"]["setEditorLayout"] and  settings.json["windmillcode-open-related-files]["options"]["includeGlobs"]
+
+# Commands
+
+| Title | Command | Description |
+| ----------- | ------- | ----------- |
+| Windmillcode Open Related Files: Open | `windmillcode-open-related-files.openRelatedFiles` | When auto open is disabled opens the related files according to the default option |
+| Windmillcode Open Related Files: Set Default Option | `windmillcode-open-related-files.setDefaultOption` | Sets the default option of related file to work with |
+| Windmillcode Open Related Files: Auto Open | `windmillcode-open-related-files.toggleAutoOpen` | When an editor is selected,opened, focused, if the file matches the matchers in the default option opens the relative files if not does nothing |
+
 
 
 # Docs
