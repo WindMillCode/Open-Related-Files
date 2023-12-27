@@ -87,8 +87,11 @@ export const openRelatedFiles = async (uri?: vscode.Uri) => {
           return
         }
       }
+      if(allFilesInSortedSections.length ===0){
+        return
+      }
       vscode.commands.executeCommand('workbench.action.closeAllEditors');
-      openFilesInLayout(allFilesInSortedSections)
+      openFilesInEditMode(allFilesInSortedSections)
       getOutputChannel().show(true)
 
 
@@ -156,32 +159,43 @@ async function getChosenOption(mySettingsJson: WMLOpenRelatedFilesSettingsJSON) 
   }
 }
 
-async function openFilesInLayout(fileMatrix) {
+async function openFilesInEditMode(fileMatrix) {
   try {
-      if (fileMatrix.length !== 1 || fileMatrix[0].length !== 2 || fileMatrix[0][0].length !== 2) {
-          throw new Error('Invalid array structure. Expected a 3D array with dimensions [1, 2, 2].');
+      if (!fileMatrix || fileMatrix.length === 0) {
+          throw new Error('Invalid array structure. Expected a non-empty 3D array.');
       }
 
-      const openAndShowFile = async (filePath) => {
+      const openAndShowFile = async (filePath, pane, editor, numEditors) => {
           const document = await vscode.workspace.openTextDocument(filePath);
-          return vscode.window.showTextDocument(document);
+          const viewColumn = vscode.ViewColumn.Beside + (numEditors * (pane-1)) + editor;
+          return vscode.window.showTextDocument(document, { viewColumn, preview: false });
       };
 
-      // Open and show files in one pane
-      const topLeftFile = await openAndShowFile(fileMatrix[0][0][0]);
-      const bottomLeftFile = await openAndShowFile(fileMatrix[0][0][1]);
+      // Iterate over the dimensions dynamically
+      for (let row = 0; row < fileMatrix.length; row++) {
+          const numPanes = fileMatrix[row].length;
 
-      // Split the editor to create two columns
-      await vscode.commands.executeCommand('workbench.action.splitEditor');
+          if (numPanes === 0) {
+              throw new Error('Invalid array structure. Expected a non-empty 2D array for each row.');
+          }
 
-      // Open and show files in the horizontal pane
-      const topRightFile = await openAndShowFile(fileMatrix[0][0][0]);
-      const bottomRightFile = await openAndShowFile(fileMatrix[0][0][1]);
+          for (let pane = 0; pane < numPanes; pane++) {
+              const numEditors = fileMatrix[row][pane].length;
 
-      // You can adjust the layout further if needed
-      // e.g., using `vscode.commands.executeCommand('workbench.action.splitEditorDown')` to create rows
+              if (numEditors === 0) {
+                  throw new Error('Invalid array structure. Expected a non-empty 1D array for each pane.');
+              }
+
+              for (let editor = 0; editor < numEditors; editor++) {
+                  const filePath = fileMatrix[row][pane][editor];
+                  await openAndShowFile(filePath, pane, editor, numEditors);
+              }
+          }
+      }
 
   } catch (error) {
       console.error(`Error opening files: ${error.message}`);
   }
 }
+
+
