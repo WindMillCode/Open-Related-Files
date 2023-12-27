@@ -2,7 +2,7 @@
   "name": "windmillcode-open-related-files",
   "displayName": "Windmillcode: Open Related Files",
   "description": "",
-  "version": "1.85.1000",
+  "version": "1.85.1001",
   "publisher": "windmillcode-publisher-0",
   "icon": "images/logo.png",
   "repository": {
@@ -28,16 +28,16 @@
   ],
   "contributes": {
     "configuration": {
-      "title":"Windmillcode: Open Related Files",
+      "title": "Windmillcode: Open Related Files",
       "properties": {
-        "windmillcode-open-related-files.autoOpen":{
-          "type":"boolean",
-          "default":false,
+        "windmillcode-open-related-files.autoOpen": {
+          "type": "boolean",
+          "default": false,
           "description": "if set to true auto opens all related files if switching to an unrelated false, false disables this"
         },
-        "windmillcode-open-related-files.defaultOption":{
-          "type":"boolean",
-          "default":false,
+        "windmillcode-open-related-files.defaultOption": {
+          "type": "boolean",
+          "default": false,
           "description": "the default option to be used in the workspace"
         }
       }
