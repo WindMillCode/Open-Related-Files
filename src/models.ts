@@ -44,7 +44,7 @@ export class WMLOpenRelatedFilesSettingsJSON {
         groups:WMLOpenRelatedFilesSettingsJSON["chosenOption"]["setEditorLayout"]["groups"],
         size?:number
       }>
-    } 
+    }
     searchPaths:Array<string>
     includeGlobs:InfiniteStringArray
     excludeGlobs:Array<string>

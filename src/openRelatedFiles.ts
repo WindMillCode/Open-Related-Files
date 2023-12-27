@@ -94,9 +94,9 @@ export const openRelatedFiles = async (uri?: vscode.Uri) => {
       .map((nullVal,index0)=>{
         return (allFiles.length-index0)*-1
       })
-      await vscode.commands.executeCommand('workbench.action.closeAllEditors');
-      await openFilesInEditMode(allFilesInSortedSections,chosenOption,flatfileMatrix)
       getOutputChannel().show(true)
+      await vscode.commands.executeCommand('workbench.action.closeAllEditors');
+      await openFilesInEditMode(allFilesInSortedSections,chosenOption)
 
 
 
@@ -166,50 +166,55 @@ async function getChosenOption(mySettingsJson: WMLOpenRelatedFilesSettingsJSON) 
 
 async function openFilesInEditMode(
   fileMatrix: WMLOpenRelatedFilesSettingsJSON["chosenOption"]["includeGlobs"],
-  chosenOption: WMLOpenRelatedFilesSettingsJSON["chosenOption"],
-  flatfileMatrix: Array<number>
+  chosenOption:WMLOpenRelatedFilesSettingsJSON["chosenOption"]
 ) {
   try {
     if (!fileMatrix || fileMatrix.length === 0) {
       throw new Error('Invalid array structure. Expected a non-empty 3D array.');
     }
 
-    const openAndShowFile = async (filePath, pane, editor, numEditors) => {
+    const openAndShowFile = async (filePath,myViewColum?) => {
       let document = await vscode.workspace.openTextDocument(filePath);
 
-      // Calculate the correct viewColumn based on the pane, editor, and numEditors
-      let viewColumn =
-        vscode.ViewColumn.Beside +
-        numEditors * pane +
-        editor +
-        (pane > 0 ? 1 : 0); // Adjust the viewColumn for subsequent panes
+      let viewColumn = vscode.ViewColumn.One;
 
-      notifyMsg(viewColumn);
+      let finalViewColumn = myViewColum??viewColumn
+
+      notifyMsg(finalViewColumn);
       return vscode.window.showTextDocument(document, {
-        viewColumn,
-        preview: false,
-        preserveFocus: true,
+        viewColumn:myViewColum??viewColumn,
+        preview: false
       });
     };
 
-    await vscode.commands.executeCommand('vscode.setEditorLayout', chosenOption.setEditorLayout);
+    // Notify with fileMatrix
+    vscode.commands.executeCommand(
+      "vscode.setEditorLayout",
+      chosenOption.setEditorLayout
+    )
+    const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+    let  numPanes = 0;
+    for (const [index0, row] of fileMatrix.entries()) {
 
-    await vscode.commands.executeCommand('workbench.action.focusFirstEditorGroup');
-    notifyMsg(fileMatrix);
+      await vscode.commands.executeCommand('workbench.action.focusFirstEditorGroup');
 
-    // flatfileMatrix = [1,2,3,4]
-    fileMatrix.forEach(async (row, index0) => {
-      row.forEach(async (pane, index1) => {
-        const numPanes = pane.length;
-        await vscode.commands.executeCommand('workbench.action.focusNextGroup');
-        pane.forEach(async (editor, index2) => {
-          await openAndShowFile(editor, index1, index2, numPanes);
-        });
-      });
-    });
+      // @ts-ignore
+      for (const [index1, editorGroup] of row.entries()) {
+        numPanes += 1
+        for (const [index2, editor] of editorGroup.entries()) {
+          await openAndShowFile(editor,numPanes)
+          await delay(100);
+        }
+
+      }
+    }
   } catch (error) {
     console.error(`Error opening files: ${error.message}`);
   }
 }
+
+
+
+
 
 
