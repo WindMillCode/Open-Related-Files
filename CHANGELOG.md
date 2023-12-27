@@ -12,5 +12,8 @@ on every vscode update a new version will be release
 ## [1.85.1000] - 2023-12-27
 * Extension made available to the public ready for use
 
-
-
+## [1.85.1001] - 2023-12-27
+* [UPDATE] Auto update feature available and persists in settings accordingly
+* [UPDATE] Set Default Option Available and persists in settings accordingly
+* [FIX] fixed an issue where auto open would trigger on unrelated files
+* [UPDATE] ensured output channel is cleared on every call to openRelatedFiles

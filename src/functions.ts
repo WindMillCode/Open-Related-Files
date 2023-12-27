@@ -132,3 +132,13 @@ export let autoOpenSetting = {
     await saveSetting("autoOpen",value)
   }
 }
+
+
+export let defaultOptionSetting = {
+  get:async ()=>{
+    return await getSetting("defaultOption")
+  },
+  set:async (value)=>{
+    await saveSetting("defaultOption",value)
+  }
+}

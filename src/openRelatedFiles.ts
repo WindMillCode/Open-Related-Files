@@ -1,15 +1,17 @@
 import * as vscode from 'vscode'
-import {  autoOpenSetting, deepCopy, getActiveDocumentUri, getOutputChannel, getRootFolderUri, getSettingsJSON, listFilesRecursively, notifyError, notifyMsg } from './functions'
+import {  autoOpenSetting, deepCopy, defaultOptionSetting, getActiveDocumentUri, getOutputChannel, getRootFolderUri, getSettingsJSON, listFilesRecursively, notifyError, notifyMsg } from './functions'
 import path = require('path')
 import fg = require('fast-glob')
 import { WMLOpenRelatedFilesSettingsJSON } from './models'
 
-let defaultOption:WMLOpenRelatedFilesSettingsJSON["chosenOption"] = null
 
 let currentEditorRelationshipString = ""
 let openRelatedFilesLock = false
 
-function trimToGetRelationshipString(fileUri: vscode.Uri,chosenOption: WMLOpenRelatedFilesSettingsJSON["chosenOption"],) {
+function trimToGetRelationshipString(
+  fileUri: vscode.Uri,
+  chosenOption: WMLOpenRelatedFilesSettingsJSON["chosenOption"],
+  showErrorMessage = false) {
   let fileName = path.basename(fileUri.path)
   let fileNameBasis = ""
   if (chosenOption.fileRegexPredicate) {
@@ -22,8 +24,9 @@ function trimToGetRelationshipString(fileUri: vscode.Uri,chosenOption: WMLOpenRe
       .reduce((acc, val) => {
         return acc.replace(val, "")
       }, fileName)
+
   }
-  else {
+  else if(showErrorMessage) {
     vscode.window.showErrorMessage(`
         missing fileRegexPredicate and subStringRemovalArray
         `, {
@@ -33,9 +36,15 @@ function trimToGetRelationshipString(fileUri: vscode.Uri,chosenOption: WMLOpenRe
           settings.json or workspace file. If you needed
           assitance watch this video`
     })
+    throw new Error("")
   }
-  currentEditorRelationshipString = fileNameBasis
-  return fileNameBasis
+  if(fileNameBasis !== fileName){
+    currentEditorRelationshipString = fileNameBasis
+    return currentEditorRelationshipString
+  }
+  else {
+    return null //the developer wants to work with other files dont trigger things
+  }
 
 }
 
@@ -113,9 +122,10 @@ async function getChosenOption(mySettingsJson: WMLOpenRelatedFilesSettingsJSON) 
     let name = await vscode.window.showQuickPick(options, {
       placeHolder: "Select what you are working on (this will become your default option)"
     })
-    mySettingsJson.chosenOption = defaultOption = mySettingsJson.options.find((option) => {
+    mySettingsJson.chosenOption = mySettingsJson.options.find((option) => {
       return option.name === name.label
     })
+    await defaultOptionSetting.set(mySettingsJson.chosenOption)
   }
 }
 
@@ -188,6 +198,7 @@ let warnWhenTooManyFiles = async (allFilesInSortedSections:Array<any>)=>{
 
 export const openRelatedFiles = async (uri?: vscode.Uri) => {
   openRelatedFilesLock = true
+  getOutputChannel().clear()
   try {
     if (!vscode.workspace.workspaceFolders) {
       vscode.window.showInformationMessage('No folder or workspace opened')
@@ -206,7 +217,7 @@ export const openRelatedFiles = async (uri?: vscode.Uri) => {
 
       let chosenOption
       let autoOpen = await autoOpenSetting.get()
-
+      let defaultOption = await defaultOptionSetting.get()
       if(autoOpen && defaultOption){
         chosenOption = defaultOption
       }
@@ -218,8 +229,13 @@ export const openRelatedFiles = async (uri?: vscode.Uri) => {
         return
       }
       let relationshipString = trimToGetRelationshipString(fileUri, chosenOption)
+      if(relationshipString === null){
+        return
+      }
+
       notifyMsg("after viewing option "+relationshipString)
       let includeGlobs= updateGlobPlaceholders(chosenOption.includeGlobs, relationshipString)
+      notifyMsg("files will be  opened based on the resulting glob")
       notifyMsg(includeGlobs)
 
 
@@ -234,7 +250,8 @@ export const openRelatedFiles = async (uri?: vscode.Uri) => {
       }
 
 
-      // getOutputChannel().show(true)
+
+
       await vscode.commands.executeCommand('workbench.action.closeAllEditors');
       await openFilesInEditMode(allFilesInSortedSections,chosenOption)
 
@@ -255,6 +272,12 @@ export const openRelatedFiles = async (uri?: vscode.Uri) => {
   }
 }
 
+export const  setDefaultOption = async(uri?:vscode.Uri)=>{
+  let mySettingsJson = new WMLOpenRelatedFilesSettingsJSON(
+    deepCopy(getSettingsJSON("windmillcode-open-related-files") ?? {})
+  )
+  await getChosenOption(mySettingsJson)
+}
 
 
 
@@ -275,26 +298,31 @@ export const toggleAutoOpen = async (uri?: vscode.Uri)=>{
 export const editorChangeDisposable = vscode.window.onDidChangeActiveTextEditor(async (editor) => {
 
 
+
   if(await autoOpenSetting.get() && editor){
       if(openRelatedFilesLock){
         return
       }
+      let shouldReturn = false
       const fileName = path.basename(editor.document.fileName);
       try {
+        let defaultOption =     await defaultOptionSetting.get()
         let prevEditorRelationshipString =  currentEditorRelationshipString
-        let newEditorRelationshipString = trimToGetRelationshipString(editor.document.uri,defaultOption)
-        // notifyMsg("Prev Value: "+prevEditorRelationshipString)
-        // notifyMsg("Next Value: "+newEditorRelationshipString)
+        let newEditorRelationshipString = trimToGetRelationshipString(editor.document.uri,defaultOption,false)
+        notifyMsg("Prev Value: "+prevEditorRelationshipString)
+        notifyMsg("Next Value: "+newEditorRelationshipString)
         if(currentEditorRelationshipString !==""){
           if(prevEditorRelationshipString === newEditorRelationshipString ){
-            return
+            shouldReturn = true
           }
         }
 
       } finally {
-        notifyMsg("changing layout ")
-        openRelatedFiles(editor.document.uri)
-        notifyMsg(`Active editor changed. File: ${fileName}`);
+        if(!shouldReturn){
+          notifyMsg("changing layout ")
+          openRelatedFiles(editor.document.uri)
+          notifyMsg(`Active editor changed. File: ${fileName}`);
+        }
       }
 
 
