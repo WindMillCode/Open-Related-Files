@@ -15,8 +15,8 @@ const getFileNamesToSearchAndPathToIgnore = async (
 ) => {
 
   let basicIgnorePatterns = chosenOption.excludeGlobs?? mySettingsJson.excludeGlobs
-  let filesNamesPromise = targetPaths.map((targetPath)=>{
-    return  fg(
+  let filesNamesPromise = targetPaths.map(async (targetPath)=>{
+    let filePaths = await fg(
       targetGlobs,
       {
         unique: true,
@@ -25,9 +25,13 @@ const getFileNamesToSearchAndPathToIgnore = async (
         ignore: basicIgnorePatterns
       },
     )
+    return filePaths
+    .map((filePath)=>{
+      return path.join(targetPath,filePath)
+    })
   })
   let filesNames = await Promise.all(filesNamesPromise)
-  return filesNames.flat(Infinity)
+  return filesNames.flat(Infinity)[0]
 
 }
 
@@ -70,8 +74,9 @@ export const openRelatedFiles = async (uri?: vscode.Uri) => {
       notifyMsg(chosenOption.includeGlobs)
       let allFilesInSortedSections:Array<any> = await getAllFilesInSortedSections(chosenOption,chosenOption.includeGlobs, targetPaths, fileUri, mySettingsJson)
       let allFiles = allFilesInSortedSections.flat(Infinity)
+      notifyMsg("files to be opened\n")
+      notifyMsg( allFilesInSortedSections)
       if(allFiles.length > 20){
-        notifyMsg("files to be opened\n" + allFilesInSortedSections)
         let myContinue = await vscode.window.showQuickPick(
           ["YES","NO"].map((label)=>{
             return {label}
@@ -82,10 +87,8 @@ export const openRelatedFiles = async (uri?: vscode.Uri) => {
           return
         }
       }
-      notifyMsg("files to be opened\n")
-      notifyMsg( allFilesInSortedSections)
-
-
+      vscode.commands.executeCommand('workbench.action.closeAllEditors');
+      openFilesInLayout(allFilesInSortedSections)
       getOutputChannel().show(true)
 
 
@@ -153,3 +156,32 @@ async function getChosenOption(mySettingsJson: WMLOpenRelatedFilesSettingsJSON) 
   }
 }
 
+async function openFilesInLayout(fileMatrix) {
+  try {
+      if (fileMatrix.length !== 1 || fileMatrix[0].length !== 2 || fileMatrix[0][0].length !== 2) {
+          throw new Error('Invalid array structure. Expected a 3D array with dimensions [1, 2, 2].');
+      }
+
+      const openAndShowFile = async (filePath) => {
+          const document = await vscode.workspace.openTextDocument(filePath);
+          return vscode.window.showTextDocument(document);
+      };
+
+      // Open and show files in one pane
+      const topLeftFile = await openAndShowFile(fileMatrix[0][0][0]);
+      const bottomLeftFile = await openAndShowFile(fileMatrix[0][0][1]);
+
+      // Split the editor to create two columns
+      await vscode.commands.executeCommand('workbench.action.splitEditor');
+
+      // Open and show files in the horizontal pane
+      const topRightFile = await openAndShowFile(fileMatrix[0][0][0]);
+      const bottomRightFile = await openAndShowFile(fileMatrix[0][0][1]);
+
+      // You can adjust the layout further if needed
+      // e.g., using `vscode.commands.executeCommand('workbench.action.splitEditorDown')` to create rows
+
+  } catch (error) {
+      console.error(`Error opening files: ${error.message}`);
+  }
+}
