@@ -1,9 +1,10 @@
 # ChangeLog
 
-All notable changes to the "Open Related Files" extension pack will be documented in this file.
+All notable changes to the "Windmillcode Open Related Files" extension pack will be documented in this file.
 
-Version updates will be based on vscode relesases
+* Version updates will be based on vscode relesases
 on every vscode update a new version will be release
+
 * the software version extends the vscode patch version by 3 zeros giving us
 1000 possible updates before there is an update to vscode and extends back to zero
 
