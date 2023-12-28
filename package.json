@@ -84,6 +84,7 @@
   "dependencies": {
     "@vscode/vsce": "^2.22.0",
     "adm-zip": "^0.5.10",
+    "fast-glob": "^3.3.2",
     "gitignore-parser": "^0.0.2",
     "semver": "^7.5.4",
     "tar": "^6.1.15",

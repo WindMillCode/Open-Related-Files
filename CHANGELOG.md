@@ -24,3 +24,6 @@ on every vscode update a new version will be release
 ## [1.85.1002] - 2023-12-27
 * [UPDATE] Can toggle whether you want to reset the layout on every new file that gets openend
 * [CHANGE] renamed command from Windmillcode Open Related Files: Auto Open to Windmillcode Open Related Files: Toggle Auto Open
+
+## [1.85.1003] - 2023-12-27
+[FIX]  added the fast-glob module

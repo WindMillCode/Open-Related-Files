@@ -1,6 +1,9 @@
 # Windmillcode Open Related Files
 
 
+# Overview
+* do you work on a project where you need to shift between related files. is the file management overwhelming this extension amins to solve that
+
 # Usage
 * Open the file according to your file fileRegexPredicate or subStringRemovalArray in settings.json["windmillcode-open-related-files]["options"]["fileRegexPredicate","subStringRemovalArray"]
 
