@@ -1,12 +1,14 @@
 import * as vscode from 'vscode'
-import {  autoOpenSetting, deepCopy, defaultOptionSetting, getActiveDocumentUri, getOutputChannel, getRootFolderUri, getSettingsJSON, listFilesRecursively, notifyError, notifyMsg, resetLayoutSetting } from './functions'
+import {  autoOpenSetting, deepCopy, defaultOptionSetting, getActiveDocumentUri, getRootFolderUri, getSettingsJSON, resetLayoutSetting } from './functions'
 import path = require('path')
 import fg = require('fast-glob')
-import { WMLOpenRelatedFilesSettingsJSON } from './models'
+import {  ChannelManager, InfiniteGlobString, WMLOpenRelatedFilesSettingsJSON } from './models'
 
 
 let currentEditorRelationshipString = ""
 let openRelatedFilesLock = false
+let channel0 = new ChannelManager("Windmillcode Open Related Files")
+let channe1 = new ChannelManager("channel1")
 
 function trimToGetRelationshipString(
   fileUri: vscode.Uri,
@@ -53,13 +55,13 @@ const getFileNamesToSearchAndPathToIgnore = async (
   targetPaths: Array<string>,filePath: string,
   mySettingsJson:WMLOpenRelatedFilesSettingsJSON,
   chosenOption:WMLOpenRelatedFilesSettingsJSON["chosenOption"],
-  targetGlobs:Array<string>
+  targetGlobs:InfiniteGlobString[]
 ) => {
-
   let basicIgnorePatterns = chosenOption.excludeGlobs?? mySettingsJson.excludeGlobs
   let filesNamesPromise = targetPaths.map(async (targetPath)=>{
     let filePaths = await fg(
-      targetGlobs,
+      // @ts-ignore
+      targetGlobs.filePath,
       {
         unique: true,
         cwd: targetPath,
@@ -69,7 +71,11 @@ const getFileNamesToSearchAndPathToIgnore = async (
     )
     return filePaths
     .map((filePath)=>{
-      return path.join(targetPath,filePath)
+      return {
+        filePath:path.join(targetPath,filePath),
+        // @ts-ignore
+        section:targetGlobs.section
+      }
     })
   })
   let filesNames = await Promise.all(filesNamesPromise)
@@ -110,7 +116,12 @@ function updateGlobPlaceholders(
     if (Array.isArray(globString)) {
       return updateGlobPlaceholders(globString,relationshipString)
     }
-    return globString.replace("FILE_NAME_BASIS", relationshipString)
+
+    return {
+      ...globString,
+      filePath:globString.filePath.replace("FILE_NAME_BASIS", relationshipString)
+    }
+
   })
 }
 
@@ -138,16 +149,25 @@ async function openFilesInEditMode(
       throw new Error('Invalid array structure. Expected a non-empty 3D array.');
     }
 
-    const openAndShowFile = async (filePath,myViewColum?) => {
+    const openAndShowFile = async (filePath,myViewColum?,section=[0,0,0,0]) => {
       let document = await vscode.workspace.openTextDocument(filePath);
 
       let viewColumn = vscode.ViewColumn.One;
 
       let finalViewColumn = myViewColum??viewColumn
+      section = section.map((part)=>{
+        return part === 0 ? part : part -1
+      })
 
       return vscode.window.showTextDocument(document, {
         viewColumn:finalViewColumn,
-        preview: false
+        preview: false,
+        selection:new vscode.Range(
+          section[0] ,
+          section[1],
+          section[2],
+          section[3]
+        )
       });
     };
 
@@ -170,7 +190,9 @@ async function openFilesInEditMode(
       for (const [index1, editorGroup] of row.entries()) {
         numPanes += 1
         for (const [index2, editor] of editorGroup.entries()) {
-          await openAndShowFile(editor,numPanes)
+
+
+          await openAndShowFile(editor.filePath,numPanes,editor.section)
           await delay(100);
         }
 
@@ -182,8 +204,8 @@ async function openFilesInEditMode(
 }
 let warnWhenTooManyFiles = async (allFilesInSortedSections:Array<any>)=>{
   let allFiles = allFilesInSortedSections.flat(Infinity)
-  notifyMsg("files to be opened")
-  notifyMsg( allFilesInSortedSections)
+  channel0.notifyMsg("files to be opened")
+  channel0.notifyMsg( allFilesInSortedSections)
   if(allFiles.length > 20){
     let myContinue = await vscode.window.showQuickPick(
       ["YES","NO"].map((label)=>{
@@ -202,7 +224,7 @@ let warnWhenTooManyFiles = async (allFilesInSortedSections:Array<any>)=>{
 
 export const openRelatedFiles = async (uri?: vscode.Uri) => {
   openRelatedFilesLock = true
-  getOutputChannel().clear()
+  channel0.channel.clear()
   try {
     if (!vscode.workspace.workspaceFolders) {
       vscode.window.showInformationMessage('No folder or workspace opened')
@@ -237,16 +259,14 @@ export const openRelatedFiles = async (uri?: vscode.Uri) => {
         return
       }
 
-      notifyMsg("after viewing option "+relationshipString)
+      channel0.notifyMsg("after viewing option "+relationshipString)
       let includeGlobs= updateGlobPlaceholders(chosenOption.includeGlobs, relationshipString)
-      notifyMsg("files will be  opened based on the resulting glob")
-      notifyMsg(includeGlobs)
-
+      channel0.notifyMsg("files will be  opened based on the resulting glob")
+      channel0.notifyMsg(includeGlobs)
 
       let targetPaths = chosenOption.searchPaths.map((subPath)=>{
         return  path.join(rootFolderUri.fsPath,subPath)
       })
-
 
       let allFilesInSortedSections:Array<any> = await getAllFilesInSortedSections(chosenOption,includeGlobs, targetPaths, fileUri, mySettingsJson)
       if(await warnWhenTooManyFiles(allFilesInSortedSections)){
@@ -263,8 +283,6 @@ export const openRelatedFiles = async (uri?: vscode.Uri) => {
     else{
       vscode.window.showErrorMessage("Please open a file in the editor and select it first (meaning click on the code area to put into focus)")
     }
-
-
 
   } catch (e: any) {
 
@@ -308,43 +326,33 @@ export const toggleResetLayout = async (uri?: vscode.Uri)=>{
 }
 
 
-
-
-
 export const editorChangeDisposable = vscode.window.onDidChangeActiveTextEditor(async (editor) => {
 
-
-
   if(await autoOpenSetting.get() && editor){
-      if(openRelatedFilesLock){
-        return
-      }
-      let shouldReturn = false
-      const fileName = path.basename(editor.document.fileName);
-      try {
-        let defaultOption =     await defaultOptionSetting.get()
-        let prevEditorRelationshipString =  currentEditorRelationshipString
-        let newEditorRelationshipString = trimToGetRelationshipString(editor.document.uri,defaultOption,false)
-        notifyMsg("Prev Value: "+prevEditorRelationshipString)
-        notifyMsg("Next Value: "+newEditorRelationshipString)
-        if(currentEditorRelationshipString !==""){
-          if(prevEditorRelationshipString === newEditorRelationshipString ){
-            shouldReturn = true
-          }
-        }
-
-      } finally {
-        if(!shouldReturn){
-          notifyMsg("changing layout ")
-          openRelatedFiles(editor.document.uri)
-          notifyMsg(`Active editor changed. File: ${fileName}`);
+    if(openRelatedFilesLock){
+      return
+    }
+    let shouldReturn = false
+    const fileName = path.basename(editor.document.fileName);
+    try {
+      let defaultOption = await defaultOptionSetting.get()
+      let prevEditorRelationshipString =  currentEditorRelationshipString
+      let newEditorRelationshipString = trimToGetRelationshipString(editor.document.uri,defaultOption,false)
+      channel0.notifyMsg("Prev Value: "+prevEditorRelationshipString)
+      channel0.notifyMsg("Next Value: "+newEditorRelationshipString)
+      if(currentEditorRelationshipString !==""){
+        if(prevEditorRelationshipString === newEditorRelationshipString ){
+          shouldReturn = true
         }
       }
 
-
-
-
-
+    } finally {
+      if(!shouldReturn){
+        channel0.notifyMsg("changing layout ")
+        openRelatedFiles(editor.document.uri)
+        channel0.notifyMsg(`Active editor changed. File: ${fileName}`);
+      }
+    }
   }
 
 });

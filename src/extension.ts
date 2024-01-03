@@ -1,7 +1,7 @@
 import * as vscode from 'vscode'
 
 import { editorChangeDisposable, openRelatedFiles,setDefaultOption,toggleAutoOpen, toggleResetLayout } from './openRelatedFiles'
-import { autoOpenSetting, getSettingsJSON, notifyError, notifyMsg } from './functions'
+
 
 export  function activate(context: vscode.ExtensionContext) {
 

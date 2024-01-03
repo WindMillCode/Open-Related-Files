@@ -15,6 +15,104 @@ Hold (Cmd+Shift) Hit P for mac
 * select the options you have set in settings.json["windmillcode-open-related-files]["options"]
 * vscode will repopulate the workbench according to the files globstrings and matrix you have specified in settings.json["windmillcode-open-related-files]["options"]["setEditorLayout"] and  settings.json["windmillcode-open-related-files]["options"]["includeGlobs"]
 
+## Example
+* paste this into your settings.json and modify according to your project
+* ask chapgpt to modify it for your framework
+```ts
+"windmillcode-open-related-files": {
+  "options": [
+    {
+      "name": "Ruby on Rails Development",
+      "searchPaths": [
+        "apps/backend/RailsApp/"
+        // add or replace your search paths
+      ],
+      "fileRegexPredicate": "\\.(rb|html.erb)$",
+      "setEditorLayout": {
+        "orientation": 1,
+        "groups": [
+          {
+            "groups": [{}, {}],
+            "size": 0.5
+          },
+          {
+            "groups": [{}],
+            "size": 0.5
+          }
+        ]
+      },
+      "includeGlobs": [
+        [
+          [
+            {
+              "filePath": "**/app/controllers/**/*_controller.rb",
+              "section": [30, 0, 90, 0]
+            }
+          ],
+          [
+            "**/app/models/**/*.rb",
+            "**/app/views/**/*.*"
+          ]
+        ],
+        [
+          [
+            {
+              "filePath": "**/test/**/*_test.rb",
+              "section": [30, 0, 90, 0]
+            }
+          ]
+        ]
+      ]
+    },
+
+    {
+      "name": "Spring Boot Development",
+      "searchPaths": [
+        "apps/backend/SpringBootApp/src"
+        // add or replace your search paths ask
+      ],
+      "fileRegexPredicate": "\\.(java|xml)$",
+      "setEditorLayout": {
+        "orientation": 1,
+        "groups": [
+          {
+            "groups": [{}],
+            "size": 0.5
+          },
+          {
+            "groups": [{}, {}],
+            "size": 0.5
+          }
+        ]
+      },
+      "includeGlobs": [
+        [
+          [
+            {
+              "filePath": "**/src/main/java/**/*Controller.java",
+              "section": [10, 0, 90, 0]
+            }
+          ]
+        ],
+        [
+          [
+            "**/src/main/java/**/*Entity.java",
+            "**/src/main/java/**/*Repository.java"
+          ],
+          [
+            {
+              "filePath": "**/src/test/java/**/*.java",
+              "section": [20, 3, 70, 10]
+            }
+          ]
+        ]
+      ]
+    }
+
+  ]
+}
+```
+
 # Commands
 
 | Title | Command | Description |
@@ -52,8 +150,24 @@ Hold (Cmd+Shift) Hit P for mac
 | `subStringRemovalArray`  | `Array<string>`                                                                                                   | `undefined`       | Same feature as fileRegexPredicate but uses an array of regular substrings to be used to trim the file name. |
 | `setEditorLayout`     | `WMLOpenRelatedFilesSettingsJSON.chosenOption.setEditorLayout` | `undefined`       | An object specifying the layout of the editor when opening related files, including orientation and groups with optional size.          |
 | `searchPaths`         | `Array<string>`                                                                                            | `undefined`       | An array of paths to be used for searching related files. so the whole project is not searched                                                                                   |
-| `includeGlobs`        | `InfiniteStringArray`                                                                                     | `undefined`       | A matrix of globs representing files to be opened having the same dimensions as WMLOpenRelatedFilesSettingsJSONchosenOption[setEditorLayout"]["groups"] if there are more dimensions then additional editor groups may be opened breaking the intended layout. if dimensions are less than setEditorLayout then vscode placeholders would be left the leftover editor groups. In addition use FILE_NAME_BASIS in the global to specify to the extension how to use the fileRegexPredicate to update the globString to narrow down the possible results to the file that you want to deal with                                                |
+| `includeGlobs`        | `WMLOpenRelatedFilesSettingsJSON.chosenOption.includeGlobs` | `undefined`       | A matrix of globs representing files to be opened having the same dimensions as WMLOpenRelatedFilesSettingsJSONchosenOption[setEditorLayout"]["groups"] if there are more dimensions then additional editor groups may be opened breaking the intended layout. if dimensions are less than setEditorLayout then vscode placeholders would be left the leftover editor groups. In addition use FILE_NAME_BASIS in the global to specify to the extension how to use the fileRegexPredicate to update the globString to narrow down the possible results to the file that you want to deal with                                                |
 | `excludeGlobs`        | `WMLOpenRelatedFilesSettingsJSON["excludeGlobs"]`                                                          | `undefined`       | An array of globs representing files or directories to be excluded when opening related files, inherited from the parent class's property. |
+
+
+### Property WMLOpenRelatedFilesSettingsJSON.includeGlobs
+
+| Level      | Type                                            | Description |
+|------------|-------------------------------------------------|-------------|
+| Base Level | `{ filePath: string, sections: Array<[number, number, number, number]> } \| string` | At the base level, each element of the array is an object with two properties: `filePath` (a globString representing the path of a file) and `sections` (an array of tuples, each containing four numbers representing specific sections of the file). Or it can be a simple globString and the section will deafult to [0,0,0,0] |
+| Nested Levels | `InfiniteStringFilePath[]` | At nested levels, the structure is an array of `InfiniteStringFilePath`, representing deeper nested arrays with the same structure as the base level. This allows for an infinite nesting of such arrays. |
+
+#### Base Level
+
+| Property | Type                 | Description |
+|----------|----------------------|-------------|
+| filePath | `string`               | A globString representing the path of a file. |
+| sections | `Array<[number,number,number,number]>` | An array of tuples, each containing four numbers. These numbers represent specific sections of the file in this manner [startLine,startChar,endLine,endChar] it will open the file at start line and highlight a section of the file from start to end values |
+
 
 
 #### Property WMLOpenRelatedFilesSettingsJSON.chosenOption.setEditorLayout

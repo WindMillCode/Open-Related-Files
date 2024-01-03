@@ -9,39 +9,6 @@ const gitignoreParser = require('gitignore-parser');
 import fg = require('fast-glob')
 
 
-let _channel: vscode.OutputChannel;
-export function getOutputChannel(): vscode.OutputChannel {
-	if (!_channel) {
-		_channel = vscode.window.createOutputChannel('Windmillcode');
-	}
-	return _channel;
-}
-
-export const notify = (message: any): void => {
-  let channel = getOutputChannel();
-  try {
-    channel.appendLine(JSON.stringify(message,null,2));
-  } catch (error) {
-
-    channel.appendLine(message);
-  }
-};
-
-export const notifyMsg = (message: any): void => {
-  notify(message);
-};
-
-export const notifyError = (err?: any, msg?: any): void => {
-  if (err?.stderr) {
-      notify(err.stderr);
-  }
-  if (err?.stdout) {
-      notify(err.stdout);
-  }
-  if (msg) {
-      notify(msg);
-  }
-};
 
 
 export function getSettingsJSON(extensionName) {
@@ -151,3 +118,32 @@ export let resetLayoutSetting = {
     await saveSetting("resetLayout",value)
   }
 }
+
+
+export function updateNestedStructure<T>(
+  obj: T,
+  predicate: (kay:number|string,value: any) => any,
+  isArray: boolean = Array.isArray(obj)
+): T {
+  if (isArray) {
+    return (obj as any[]).map((item,index0) =>
+      typeof item === 'object' && item !== null
+        ? updateNestedStructure(item, predicate, Array.isArray(item))
+        : predicate(index0,item)
+    ) as unknown as T;
+  } else {
+    const updatedObj: any = {};
+    for (const key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        const value = (obj as any)[key];
+        updatedObj[key] = typeof value === 'object' && value !== null
+          ? updateNestedStructure(value, predicate, Array.isArray(value))
+          : predicate(key,value);
+      }
+    }
+    return updatedObj;
+  }
+}
+
+
+
