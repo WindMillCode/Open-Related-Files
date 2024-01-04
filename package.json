@@ -30,6 +30,11 @@
     "configuration": {
       "title": "Windmillcode: Open Related Files",
       "properties": {
+        "windmillcode-open-related-files": {
+          "type": "object",
+          "default": false,
+          "description": "default options object for the extension refer to the README.md on how to set it up"
+        },
         "windmillcode-open-related-files.autoOpen": {
           "type": "boolean",
           "default": false,

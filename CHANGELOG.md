@@ -31,3 +31,7 @@ on every vscode update a new version will be release
 ## [1.85.1004] - 01-02-2024
 * [UPDATE] added a feature where you can select sections of the file to open to instead of opening from the top, to enable just select the default option for the updates to take effect
 
+
+## [1.85.1005] - 01-04-2024
+* [UPDATE] registered a vscode setting so it does nto appear dimmed
+

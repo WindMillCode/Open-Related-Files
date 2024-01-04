@@ -1,3 +1,7 @@
+<div class="aside">
+<div class="gfm-embed" data-url="https://www.gofundme.com/f/strengthen-our-business-to-take-on-bigger-initiati/widget/medium"></div><script defer src="https://www.gofundme.com/static/js/embed.js"></script>
+<div/>
+
 # Windmillcode Open Related Files
 
 
@@ -15,6 +19,8 @@ Hold (Cmd+Shift) Hit P for mac
 * select the options you have set in settings.json["windmillcode-open-related-files]["options"]
 * vscode will repopulate the workbench according to the files globstrings and matrix you have specified in settings.json["windmillcode-open-related-files]["options"]["setEditorLayout"] and  settings.json["windmillcode-open-related-files]["options"]["includeGlobs"]
 
+
+
 ## Example
 * paste this into your settings.json and modify according to your project
 * ask chapgpt to modify it for your framework
@@ -22,21 +28,14 @@ Hold (Cmd+Shift) Hit P for mac
 "windmillcode-open-related-files": {
   "options": [
     {
-      "name": "Ruby on Rails Development",
-      "searchPaths": [
-        "apps/backend/RailsApp/"
-        // add or replace your search paths
-      ],
-      "fileRegexPredicate": "\\.(rb|html.erb)$",
+      "name": "React Development",
+      "searchPaths": ["apps/frontend/ReactApp/src"],
+      "fileRegexPredicate": "\\.(jsx|js|tsx|ts|scss|css)$",
       "setEditorLayout": {
         "orientation": 1,
         "groups": [
           {
             "groups": [{}, {}],
-            "size": 0.5
-          },
-          {
-            "groups": [{}],
             "size": 0.5
           }
         ]
@@ -45,19 +44,63 @@ Hold (Cmd+Shift) Hit P for mac
         [
           [
             {
-              "filePath": "**/app/controllers/**/*_controller.rb",
+              "filePath": "**/src/components/**/FILE_NAME_BASIS.js",
+              "section": [30, 0, 90, 0]
+            },
+            {
+              "filePath": "**/src/components/**/FILE_NAME_BASISComponent.tsx",
               "section": [30, 0, 90, 0]
             }
           ],
           [
-            "**/app/models/**/*.rb",
-            "**/app/views/**/*.*"
+            "**/src/components/**/FILE_NAME_BASISComponent.module.css",
+            "**/src/components/**/FILE_NAME_BASISComponent.module.scss"
           ]
         ],
         [
           [
             {
-              "filePath": "**/test/**/*_test.rb",
+              "filePath": "**/src/__tests__/**/FILE_NAME_BASIS.test.js",
+              "section": [30, 0, 90, 0]
+            },
+            {
+              "filePath": "**/src/__tests__/**/FILE_NAME_BASIS.test.jsx",
+              "section": [30, 0, 90, 0]
+            }
+          ]
+        ]
+      ]
+    },
+    {
+      "name": "Ruby on Rails Development",
+      "searchPaths": ["apps/backend/RailsApp/"],
+      "fileRegexPredicate": "\\.(rb|html.erb)$",
+      "setEditorLayout": {
+        "orientation": 1,
+        "groups": [
+          {
+            "groups": [{}, {}],
+            "size": 0.5
+          }
+        ]
+      },
+      "includeGlobs": [
+        [
+          [
+            {
+              "filePath": "**/app/controllers/**/FILE_NAME_BASIS_controller.rb",
+              "section": [30, 0, 90, 0]
+            }
+          ],
+          [
+            "**/app/models/**/FILE_NAME_BASIS.rb",
+            "**/app/views/**/FILE_NAME_BASIS.*"
+          ]
+        ],
+        [
+          [
+            {
+              "filePath": "**/test/**/FILE_NAME_BASIS_test.rb",
               "section": [30, 0, 90, 0]
             }
           ]
@@ -67,10 +110,7 @@ Hold (Cmd+Shift) Hit P for mac
 
     {
       "name": "Spring Boot Development",
-      "searchPaths": [
-        "apps/backend/SpringBootApp/src"
-        // add or replace your search paths ask
-      ],
+      "searchPaths": ["apps/backend/SpringBootApp/src"],
       "fileRegexPredicate": "\\.(java|xml)$",
       "setEditorLayout": {
         "orientation": 1,
@@ -89,19 +129,17 @@ Hold (Cmd+Shift) Hit P for mac
         [
           [
             {
-              "filePath": "**/src/main/java/**/*Controller.java",
+              "filePath": "**/src/main/java/**/FILE_NAME_BASISController.java",
               "section": [10, 0, 90, 0]
             }
-          ]
-        ],
-        [
+          ],
           [
-            "**/src/main/java/**/*Entity.java",
-            "**/src/main/java/**/*Repository.java"
+            "**/src/main/java/**/FILE_NAME_BASISEntity.java",
+            "**/src/main/java/**/FILE_NAME_BASISRepository.java"
           ],
           [
             {
-              "filePath": "**/src/test/java/**/*.java",
+              "filePath": "**/src/test/java/**/FILE_NAME_BASISTest.java",
               "section": [20, 3, 70, 10]
             }
           ]
