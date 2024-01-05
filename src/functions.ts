@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { OperatingSystem } from './models';
+import { OperatingSystem, WMLOpenRelatedFilesSettingsJSON } from './models';
 import * as path from 'path'
 import * as os from 'os'
 const { v4: uuidv4 } = require('uuid');
@@ -103,9 +103,9 @@ export let autoOpenSetting = {
 
 export let defaultOptionSetting = {
   get:async ()=>{
-    return await getSetting("defaultOption")
+    return await getSetting("defaultOption") as WMLOpenRelatedFilesSettingsJSON["chosenOption"]
   },
-  set:async (value)=>{
+  set:async (value:WMLOpenRelatedFilesSettingsJSON["chosenOption"])=>{
     await saveSetting("defaultOption",value)
   }
 }

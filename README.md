@@ -174,10 +174,12 @@ Hold (Cmd+Shift) Hit P for mac
 
 ## WMLOpenRelatedFiles JSON Settings
 
+
+* __Important Note__ - WMLOpenRelatedFilesSettingsJSON.chosenOption not available on the object its available as windmillcode-open-related-files.defaultOption, you would typically use the `windmillcode-open-related-files.defaultOption` to set this as its a duplicate from one of your selected options in the WMLOpenRelatedFilesSettingsJSON.options array
 | **Name**               | **Type**                                    | **Default Value**                              | **Description**                                                                                               |
 |------------------------|---------------------------------------------|-----------------------------------------------|-----------------------------------------------------------------------------------------------------------------|
 | `excludeGlobs`         | `Array<string>`                             | `["**/node_modules/**", "**/site-packages/**", "**/.git/**"]` | An array of globs representing files or directories to be excluded when opening related files. for all options provided by the developer               |
-| `chosenOption`              | `WMLOpenRelatedFilesSettingsJSON.chosenOption`          | `undefined`                   | The chosen option the developer wants to use when working with files
+| `chosenOption`              | `WMLOpenRelatedFilesSettingsJSON.chosenOption`          | `undefined`                   | The chosen option the developer wants to use when working with files.
 | `options`              | `Array<Partial<WMLOpenRelatedFilesSettingsJSON["chosenOption"]>>`          | `[ { "name": "Disable" } ]`                   | An array of options for opening related files, each having a name and potentially additional settings based on the chosen option.                                        |
 
 ### Property WMLOpenRelatedFilesSettingsJSON.chosenOption

@@ -27,10 +27,17 @@ export type InfiniteGlobString = Array<{
 
 export class ChannelManager {
 
+  channelName:string
   constructor(channelName:string = "Windmillcode"){
-    this.channel = vscode.window.createOutputChannel(channelName)
+    this.channelName = channelName
   }
-  channel:vscode.OutputChannel
+  get channel(){
+    if(!this._channel){
+      this._channel = vscode.window.createOutputChannel(this.channelName)
+    }
+    return this._channel
+  }
+  _channel:vscode.OutputChannel
   private notify =(message: any): void => {
     try {
       this.channel.appendLine(JSON.stringify(message,null,2));

@@ -1,6 +1,6 @@
 import * as vscode from 'vscode'
 
-import { editorChangeDisposable, openRelatedFiles,setDefaultOption,toggleAutoOpen, toggleResetLayout } from './openRelatedFiles'
+import { editorChangeDisposable, onSettingsChangedDisposable, openRelatedFiles,setDefaultOption,toggleAutoOpen, toggleResetLayout } from './openRelatedFiles'
 
 
 export  function activate(context: vscode.ExtensionContext) {
@@ -38,4 +38,5 @@ export  function activate(context: vscode.ExtensionContext) {
 
 export function deactivate() {
   editorChangeDisposable.dispose()
+  onSettingsChangedDisposable.dispose()
 }

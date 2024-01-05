@@ -119,7 +119,7 @@ function updateGlobPlaceholders(
 
     return {
       ...globString,
-      filePath:globString.filePath.replace("FILE_NAME_BASIS", relationshipString)
+      filePath:globString.filePath.replace(/FILE_NAME_BASIS/g, relationshipString)
     }
 
   })
@@ -150,6 +150,7 @@ async function openFilesInEditMode(
     }
 
     const openAndShowFile = async (filePath,myViewColum?,section=[0,0,0,0]) => {
+
       let document = await vscode.workspace.openTextDocument(filePath);
 
       let viewColumn = vscode.ViewColumn.One;
@@ -190,7 +191,9 @@ async function openFilesInEditMode(
       for (const [index1, editorGroup] of row.entries()) {
         numPanes += 1
         for (const [index2, editor] of editorGroup.entries()) {
-
+          if([null,undefined].includes(editor)){
+            continue
+          }
 
           await openAndShowFile(editor.filePath,numPanes,editor.section)
           await delay(100);
@@ -344,6 +347,9 @@ export const editorChangeDisposable = vscode.window.onDidChangeActiveTextEditor(
         if(prevEditorRelationshipString === newEditorRelationshipString ){
           shouldReturn = true
         }
+        if(("extension-output-windmillcode-publisher-0.windmillcode-open-related-files-#1-Windmillcode Open Related Files".includes(fileName))){
+          shouldReturn = true
+        }
       }
 
     } finally {
@@ -355,6 +361,47 @@ export const editorChangeDisposable = vscode.window.onDidChangeActiveTextEditor(
     }
   }
 
+});
+
+
+
+let debounceTimer;
+
+export const onSettingsChangedDisposable = vscode.workspace.onDidChangeConfiguration(async (event) => {
+  if (event.affectsConfiguration("windmillcode-open-related-files")) {
+
+    if (debounceTimer) {
+      clearTimeout(debounceTimer);
+    }
+
+    debounceTimer = setTimeout(async () => {
+      // Save the current active editor and cursor position
+      let activeEditor = vscode.window.activeTextEditor;
+      let cursorPosition = deepCopy(activeEditor.visibleRanges[0])
+
+
+
+
+      let mySettingsJson = new WMLOpenRelatedFilesSettingsJSON(
+        deepCopy(getSettingsJSON("windmillcode-open-related-files") ?? {})
+      );
+      let currentSetting = await defaultOptionSetting.get();
+      let chosenOption = mySettingsJson.options.find((option) => {
+        return option.name === currentSetting.name;
+      });
+      if (chosenOption) {
+        mySettingsJson.chosenOption = chosenOption;
+        await defaultOptionSetting.set(mySettingsJson.chosenOption);
+      }
+
+
+      let currentRange = new vscode.Range(cursorPosition[0].line,cursorPosition[0].character,cursorPosition[1].line,cursorPosition[1].character)
+      // Restore the cursor position in the previously active editor
+      if (currentRange) {
+        activeEditor.revealRange(currentRange)
+      }
+    }, 1000); // Waits for 1 second of inactivity before executing
+  }
 });
 
 
