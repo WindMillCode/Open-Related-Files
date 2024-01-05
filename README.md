@@ -4,6 +4,8 @@
 
 # Windmillcode Open Related Files
 
+[Video Tutorial](https://www.youtube.com/watch?v=oPkuSxVS190)
+[Donate](https://www.gofundme.com/f/strengthen-our-business-to-take-on-bigger-initiati/widget/medium)
 
 # Overview
 * do you work on a project where you need to shift between related files. is the file management overwhelming this extension amins to solve that

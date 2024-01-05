@@ -133,6 +133,9 @@ async function getChosenOption(mySettingsJson: WMLOpenRelatedFilesSettingsJSON) 
     let name = await vscode.window.showQuickPick(options, {
       placeHolder: "Select what you are working on (this will become your default option)"
     })
+    if(!name){
+      return
+    }
     mySettingsJson.chosenOption = mySettingsJson.options.find((option) => {
       return option.name === name.label
     })

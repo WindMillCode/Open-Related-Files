@@ -37,3 +37,9 @@ on every vscode update a new version will be release
 
 ## [1.85.1006] - 01-04-2024
 * [UPDATE] when editing settings.json json if default option was the chosen option automatically updates the default option
+
+
+## [1.85.1007] - 01-05-2024
+* [UPDATE] removed error when user does not select an option
+* [UPDATE] added a video tutorial
+
