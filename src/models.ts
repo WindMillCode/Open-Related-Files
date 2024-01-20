@@ -2,6 +2,8 @@ import * as vscode from 'vscode';
 import { deepCopy,  updateNestedStructure } from './functions';
 const path = require('path');
 
+
+
 export interface WMLTaskDefinition extends vscode.TaskDefinition {
 
 	task: string;
@@ -30,8 +32,10 @@ export class InfiniteGlobString {
       this.createFileIfNotFoundPath = path.join(this.createFileIfNotFoundPath)
     }
   }
+  _relativeFilePath:string =""
   filePath:string = ""
   section:[number,number,number,number] = [0,0,0,0]
+  createFileRelativeToTrustedFilePath = false
   createFileIfNotFoundPath?:string
 }
 export type InfiniteGlobStringArray = Array<InfiniteGlobString> | InfiniteGlobStringArray[];

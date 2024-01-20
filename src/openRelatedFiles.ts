@@ -52,7 +52,7 @@ function trimToGetRelationshipString(
 
 
 const getFileNamesToSearchAndPathToIgnore = async (
-  targetPaths: Array<string>,filePath: string,
+  targetPaths: Array<string>,
   mySettingsJson:WMLOpenRelatedFilesSettingsJSON,
   chosenOption:WMLOpenRelatedFilesSettingsJSON["chosenOption"],
   targetGlob:InfiniteGlobString
@@ -73,14 +73,12 @@ const getFileNamesToSearchAndPathToIgnore = async (
       filePaths.push(path.basename(targetGlob.filePath))
     }
     return filePaths
-    .map((filePath)=>{
-      return {
-        filePath:path.join(targetPath,filePath),
-        // @ts-ignore
-        section:targetGlob.section,
-        // @ts-ignore
-        createFileIfNotFoundPath:targetGlob.createFileIfNotFoundPath
-      }
+    .map((_relativeFilePath)=>{
+      return new InfiniteGlobString({
+        ...targetGlob,
+        filePath:path.join(targetPath,_relativeFilePath),
+        _relativeFilePath:path.normalize(_relativeFilePath)
+      })
     })
   })
   let filesNames = await Promise.all(filesNamesPromise)
@@ -102,7 +100,6 @@ async function getAllFilesInSortedSections(
         }
         return (await getFileNamesToSearchAndPathToIgnore(
           targetPaths,
-          fileUri.fsPath,
           mySettingsJson,
           chosenOption,
           globString
@@ -150,17 +147,29 @@ async function getChosenOption(mySettingsJson: WMLOpenRelatedFilesSettingsJSON) 
 }
 
 async function openOrCreateAndOpenTextDoc(filePath, altPath) {
-
-  try{
+  try {
     return await vscode.workspace.openTextDocument(filePath);
-  }
-  catch (error) {
-    let createFile = path.join(getRootFolderUri().fsPath,altPath,path.basename(filePath))
-    fs.writeFileSync(createFile,"");
-    return await vscode.workspace.openTextDocument(createFile);
-  }
+  } catch (error) {
+    console.error(`Error opening ${filePath}: ${error}`);
+    // Attempt to create the file if it doesn't exist
+    const createFile = path.join(getRootFolderUri().fsPath, altPath, path.basename(filePath));
+    const directory = path.dirname(createFile);
+    try {
+      // Ensure parent directories are created
+      await fs.promises.mkdir(directory, { recursive: true });
 
+      // Try to create the file using fs.open with the 'w' flag
+      const fileHandle = await fs.promises.open(createFile, 'w');
+      await fileHandle.close();
+      console.log(`Created file: ${createFile}`);
+      return await vscode.workspace.openTextDocument(createFile);
+    } catch (createError) {
+      console.error(`Error creating file ${createFile}: ${createError}`);
+      throw createError; // Propagate the error
+    }
+  }
 }
+
 
 const openAndShowFile = async (filePath,myViewColum?,section=[0,0,0,0],altPath?:string) => {
 
@@ -301,7 +310,7 @@ export const openRelatedFiles = async (uri?: vscode.Uri) => {
       if(await warnWhenTooManyFiles(allFilesInSortedSections)){
         return
       }
-      channel0.notifyMsg(allFilesInSortedSections)
+      updatePathsForVariableFiles(allFilesInSortedSections)
 
       let resetLayout = await resetLayoutSetting.get()
       if(resetLayout === true){
@@ -433,4 +442,30 @@ export const onSettingsChangedDisposable = vscode.workspace.onDidChangeConfigura
 
 
 
+
+function updatePathsForVariableFiles(allFilesInSortedSections: InfiniteGlobStringArray) {
+  // @ts-ignore
+  let flatArray:InfiniteGlobString[] = allFilesInSortedSections.flat(Infinity)
+
+  let untrustedGlobs = flatArray.filter((obj:InfiniteGlobString)=> {
+    return obj.createFileRelativeToTrustedFilePath === true
+  })
+  if(untrustedGlobs.length>=0){
+    let trustedGlobObj = flatArray.find((obj:InfiniteGlobString)=> {
+      return obj.createFileRelativeToTrustedFilePath === false && [null,undefined,""].includes(obj.createFileIfNotFoundPath)
+    })
+
+     untrustedGlobs.forEach((obj)=>{
+      let targetFile = path.basename(obj.filePath)
+      let targetDir = path.dirname(trustedGlobObj._relativeFilePath)
+      obj.createFileIfNotFoundPath = path.join(obj.createFileIfNotFoundPath,targetDir)
+
+    })
+    // console.log(trustedGlobObj)
+    // console.log(untrustedGlobs)
+  }
+  console.log(allFilesInSortedSections)
+  console.log(flatArray)
+  return allFilesInSortedSections
+}
 
