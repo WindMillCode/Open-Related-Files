@@ -43,3 +43,6 @@ on every vscode update a new version will be release
 * [UPDATE] removed error when user does not select an option
 * [UPDATE] added a video tutorial
 
+## [1.85.1008] - 01-19-2024
+* [UPDATE] added InfiniteGlobString class to rpresent the value at the base of InfiniteGlobStringArray or the includeGlobs option
+and added InfiniteGlobString.createFileIfNotFoundPath on that so that the extension can create the file if the related files does not exist
