@@ -210,6 +210,8 @@ Hold (Cmd+Shift) Hit P for mac
 | filePath               | `string` | A globString representing the path of a file. |
 | section                | `Array<[number, number, number, number]>` | An array of tuples, each containing four numbers. These numbers represent specific sections of the file in this manner [startLine, startChar, endLine, endChar]. It will open the file at the start line and highlight a section of the file from the start to end values. |
 | createFileIfNotFoundPath | `string` (optional) | An optional path for creating a file if it doesn't exist. |
+| createFileRelativeToTrustedFilePath | `boolean` | Indicates whether the file should be created relative to a file already opened and given to be trusted. Set to `false`. |
+
 
 
 
