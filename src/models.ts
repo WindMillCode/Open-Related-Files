@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { deepCopy,  updateNestedStructure } from './functions';
-
+const path = require('path');
 
 export interface WMLTaskDefinition extends vscode.TaskDefinition {
 
@@ -18,10 +18,23 @@ export enum OperatingSystem  {
 
 
 export type InfiniteStringArray = Array<string> | InfiniteStringArray[];
-export type InfiniteGlobString = Array<{
-  filePath:string,
-  sections:Array<[number,number,number,number]>
-}> | InfiniteGlobString[];
+export class InfiniteGlobString {
+  constructor(params: Partial<InfiniteGlobString> = {}) {
+
+    let origParams = Object.entries(params)
+      .filter(([key,val]) => {
+        return !key.startsWith('param');
+      });
+    Object.assign(this, { ...Object.fromEntries(origParams) });
+    if(this.createFileIfNotFoundPath){
+      this.createFileIfNotFoundPath = path.join(this.createFileIfNotFoundPath)
+    }
+  }
+  filePath:string = ""
+  section:[number,number,number,number] = [0,0,0,0]
+  createFileIfNotFoundPath?:string
+}
+export type InfiniteGlobStringArray = Array<InfiniteGlobString> | InfiniteGlobStringArray[];
 
 
 
@@ -65,29 +78,12 @@ export class ChannelManager {
 export class WMLOpenRelatedFilesSettingsJSON {
   constructor(params: Partial<WMLOpenRelatedFilesSettingsJSON> = {}) {
 
+
     let origParams = Object.entries(params)
       .filter(([key,val]) => {
         return !key.startsWith('param');
       });
-    let options = deepCopy(this.options)
-    Object.assign(this, { ...Object.fromEntries(origParams) });
-    this.options.push(...options)
-
-    this.options = this.options.map((option)=>{
-      option.includeGlobs =  updateNestedStructure(option.includeGlobs,(key:string,val)=>{
-
-        if(typeof(val) === "string" && !["filePath","section"].includes(key)){
-          return {
-            filePath:val,
-            section:[0,0,0,0]
-          }
-        }
-        return val
-
-      })
-      return option
-    })
-
+    this.initOptions(origParams);
   }
   excludeGlobs:Array<string> = [
     "**/node_modules/**",
@@ -108,7 +104,7 @@ export class WMLOpenRelatedFilesSettingsJSON {
       }>
     }
     searchPaths:Array<string>
-    includeGlobs:InfiniteGlobString
+    includeGlobs:InfiniteGlobStringArray
     excludeGlobs:Array<string>
   }>
   options:Array<WMLOpenRelatedFilesSettingsJSON["chosenOption"]> = [
@@ -116,4 +112,27 @@ export class WMLOpenRelatedFilesSettingsJSON {
       "name":"Disable"
     }
   ]
+
+  private initOptions =(origParams)=> {
+
+    let options = deepCopy(this.options);
+    Object.assign(this, { ...Object.fromEntries(origParams) });
+    this.options.push(...options);
+    this.options = this.options.map((option) => {
+      option.includeGlobs = updateNestedStructure(option.includeGlobs, (key: string, val) => {
+
+        if (typeof (val) === "string" ) {
+          return new InfiniteGlobString({
+            filePath: val
+          });
+        }
+        else{
+          return new InfiniteGlobString(val);
+        }
+
+
+      });
+      return option;
+    });
+  }
 }

@@ -28,7 +28,7 @@ export function getSettingsJSON(extensionName) {
   const workspaceConfig = vscode.workspace.getConfiguration(extensionName);
 
 
-  console.log('Fallback to other workspace setting:', workspaceConfig);
+  // console.log('Fallback to other workspace setting:', workspaceConfig);
   return workspaceConfig;
 }
 
@@ -122,28 +122,26 @@ export let resetLayoutSetting = {
 
 export function updateNestedStructure<T>(
   obj: T,
-  predicate: (kay:number|string,value: any) => any,
-  isArray: boolean = Array.isArray(obj)
+  predicate: (key: number|string, value: any) => any
 ): T {
-  if (isArray) {
-    return (obj as any[]).map((item,index0) =>
-      typeof item === 'object' && item !== null
-        ? updateNestedStructure(item, predicate, Array.isArray(item))
-        : predicate(index0,item)
+  if (Array.isArray(obj)) {
+    // Handle array of any dimension: apply updateNestedStructure recursively on each element
+    return obj.map((item, index) =>
+      updateNestedStructure(item, predicate)
     ) as unknown as T;
+  } else if (typeof obj === 'object' && obj !== null) {
+    // If it's an object, apply predicate to the object
+    return predicate('object', obj) as unknown as T;
+  } else if (typeof obj === 'string') {
+    // If it's a string, apply predicate to the string
+    return predicate('string', obj) as unknown as T;
   } else {
-    const updatedObj: any = {};
-    for (const key in obj) {
-      if (obj.hasOwnProperty(key)) {
-        const value = (obj as any)[key];
-        updatedObj[key] = typeof value === 'object' && value !== null
-          ? updateNestedStructure(value, predicate, Array.isArray(value))
-          : predicate(key,value);
-      }
-    }
-    return updatedObj;
+    // For other types, just return as is (or you can modify this as needed)
+    return obj;
   }
 }
+
+
 
 
 

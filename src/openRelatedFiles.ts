@@ -2,8 +2,8 @@ import * as vscode from 'vscode'
 import {  autoOpenSetting, deepCopy, defaultOptionSetting, getActiveDocumentUri, getRootFolderUri, getSettingsJSON, resetLayoutSetting } from './functions'
 import path = require('path')
 import fg = require('fast-glob')
-import {  ChannelManager, InfiniteGlobString, WMLOpenRelatedFilesSettingsJSON } from './models'
-
+import {  ChannelManager, InfiniteGlobString, InfiniteGlobStringArray, WMLOpenRelatedFilesSettingsJSON } from './models'
+import fs = require('fs')
 
 let currentEditorRelationshipString = ""
 let openRelatedFilesLock = false
@@ -55,13 +55,13 @@ const getFileNamesToSearchAndPathToIgnore = async (
   targetPaths: Array<string>,filePath: string,
   mySettingsJson:WMLOpenRelatedFilesSettingsJSON,
   chosenOption:WMLOpenRelatedFilesSettingsJSON["chosenOption"],
-  targetGlobs:InfiniteGlobString[]
+  targetGlob:InfiniteGlobString
 ) => {
   let basicIgnorePatterns = chosenOption.excludeGlobs?? mySettingsJson.excludeGlobs
+
   let filesNamesPromise = targetPaths.map(async (targetPath)=>{
     let filePaths = await fg(
-      // @ts-ignore
-      targetGlobs.filePath,
+      targetGlob.filePath,
       {
         unique: true,
         cwd: targetPath,
@@ -69,16 +69,22 @@ const getFileNamesToSearchAndPathToIgnore = async (
         ignore: basicIgnorePatterns
       },
     )
+    if(filePaths.length === 0){
+      filePaths.push(path.basename(targetGlob.filePath))
+    }
     return filePaths
     .map((filePath)=>{
       return {
         filePath:path.join(targetPath,filePath),
         // @ts-ignore
-        section:targetGlobs.section
+        section:targetGlob.section,
+        // @ts-ignore
+        createFileIfNotFoundPath:targetGlob.createFileIfNotFoundPath
       }
     })
   })
   let filesNames = await Promise.all(filesNamesPromise)
+
   return filesNames.flat(Infinity)[0]
 
 }
@@ -143,6 +149,43 @@ async function getChosenOption(mySettingsJson: WMLOpenRelatedFilesSettingsJSON) 
   }
 }
 
+async function openOrCreateAndOpenTextDoc(filePath, altPath) {
+
+  try{
+    return await vscode.workspace.openTextDocument(filePath);
+  }
+  catch (error) {
+    let createFile = path.join(getRootFolderUri().fsPath,altPath,path.basename(filePath))
+    fs.writeFileSync(createFile,"");
+    return await vscode.workspace.openTextDocument(createFile);
+  }
+
+}
+
+const openAndShowFile = async (filePath,myViewColum?,section=[0,0,0,0],altPath?:string) => {
+
+  let document = await openOrCreateAndOpenTextDoc(filePath,altPath);
+
+  let viewColumn = vscode.ViewColumn.One;
+
+  let finalViewColumn = myViewColum??viewColumn
+  section = section.map((part)=>{
+    return part === 0 ? part : part -1
+  })
+
+  await vscode.window.showTextDocument(document, {
+    viewColumn:finalViewColumn,
+    preview: false,
+    selection:new vscode.Range(
+      section[0] ,
+      section[1],
+      section[2],
+      section[3]
+    )
+  });
+
+};
+
 async function openFilesInEditMode(
   fileMatrix: WMLOpenRelatedFilesSettingsJSON["chosenOption"]["includeGlobs"],
   chosenOption:WMLOpenRelatedFilesSettingsJSON["chosenOption"]
@@ -152,28 +195,7 @@ async function openFilesInEditMode(
       throw new Error('Invalid array structure. Expected a non-empty 3D array.');
     }
 
-    const openAndShowFile = async (filePath,myViewColum?,section=[0,0,0,0]) => {
 
-      let document = await vscode.workspace.openTextDocument(filePath);
-
-      let viewColumn = vscode.ViewColumn.One;
-
-      let finalViewColumn = myViewColum??viewColumn
-      section = section.map((part)=>{
-        return part === 0 ? part : part -1
-      })
-
-      return vscode.window.showTextDocument(document, {
-        viewColumn:finalViewColumn,
-        preview: false,
-        selection:new vscode.Range(
-          section[0] ,
-          section[1],
-          section[2],
-          section[3]
-        )
-      });
-    };
 
     // Notify with fileMatrix
     let resetLayout = await resetLayoutSetting.get()
@@ -198,7 +220,7 @@ async function openFilesInEditMode(
             continue
           }
 
-          await openAndShowFile(editor.filePath,numPanes,editor.section)
+          await openAndShowFile(editor.filePath,numPanes,editor.section,editor.createFileIfNotFoundPath)
           await delay(100);
         }
 
@@ -265,10 +287,11 @@ export const openRelatedFiles = async (uri?: vscode.Uri) => {
         return
       }
 
-      channel0.notifyMsg("after viewing option "+relationshipString)
+      // channel0.notifyMsg(chosenOption.includeGlobs)
+      // channel0.notifyMsg("after viewing option "+relationshipString)
       let includeGlobs= updateGlobPlaceholders(chosenOption.includeGlobs, relationshipString)
-      channel0.notifyMsg("files will be  opened based on the resulting glob")
-      channel0.notifyMsg(includeGlobs)
+      // channel0.notifyMsg("files will be  opened based on the resulting glob")
+      // channel0.notifyMsg(includeGlobs)
 
       let targetPaths = chosenOption.searchPaths.map((subPath)=>{
         return  path.join(rootFolderUri.fsPath,subPath)
@@ -278,6 +301,7 @@ export const openRelatedFiles = async (uri?: vscode.Uri) => {
       if(await warnWhenTooManyFiles(allFilesInSortedSections)){
         return
       }
+      channel0.notifyMsg(allFilesInSortedSections)
 
       let resetLayout = await resetLayoutSetting.get()
       if(resetLayout === true){
