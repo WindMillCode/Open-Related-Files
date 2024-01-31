@@ -71,6 +71,20 @@
         "command": "git add .;git commit -m'[UPDATE] new version ${input:misc_package_project_0}';git push -u origin HEAD;npx vsce package ${input:misc_package_project_0};npx vsce publish ${input:misc_package_project_0};start explorer ."
       }
     },
+    {
+      "label": "misc: package project cmd",
+      "type": "shell",
+      "dependsOn": "misc: rm all vsix",
+      "command": "npx vsce package ${input:misc_package_project_0} && npx vsce publish ${input:misc_package_project_0} && start explorer .",
+      "windows": {
+        "options": {
+          "shell": {
+            "executable": "cmd.exe",
+            "args": ["/d", "/c"]
+          }
+        }
+      }
+    },
 		{
       "label":"misc: make new go command",
       "type":"shell",
