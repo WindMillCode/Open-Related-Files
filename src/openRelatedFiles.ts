@@ -161,7 +161,7 @@ async function openOrCreateAndOpenTextDoc(filePath, altPath) {
       // Try to create the file using fs.open with the 'w' flag
       const fileHandle = await fs.promises.open(createFile, 'w');
       await fileHandle.close();
-      console.log(`Created file: ${createFile}`);
+      
       return await vscode.workspace.openTextDocument(createFile);
     } catch (createError) {
       console.error(`Error creating file ${createFile}: ${createError}`);
@@ -456,16 +456,13 @@ function updatePathsForVariableFiles(allFilesInSortedSections: InfiniteGlobStrin
     })
 
      untrustedGlobs.forEach((obj)=>{
-      let targetFile = path.basename(obj.filePath)
       let targetDir = path.dirname(trustedGlobObj._relativeFilePath)
       obj.createFileIfNotFoundPath = path.join(obj.createFileIfNotFoundPath,targetDir)
 
     })
-    // console.log(trustedGlobObj)
-    // console.log(untrustedGlobs)
+
   }
-  console.log(allFilesInSortedSections)
-  console.log(flatArray)
+
   return allFilesInSortedSections
 }
 

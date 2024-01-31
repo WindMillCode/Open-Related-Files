@@ -11,7 +11,7 @@
       "request": "launch",
       "runtimeExecutable": "${execPath}",
       "args": [
-        "--profile-temp",
+        // "--profile-temp",
         "--extensionDevelopmentPath=${workspaceRoot}"
       ],
       "sourceMaps": true,

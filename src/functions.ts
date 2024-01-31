@@ -1,11 +1,7 @@
 import * as vscode from 'vscode';
-import { OperatingSystem, WMLOpenRelatedFilesSettingsJSON } from './models';
-import * as path from 'path'
-import * as os from 'os'
-const { v4: uuidv4 } = require('uuid');
+import { WMLOpenRelatedFilesSettingsJSON } from './models';
+import * as path from 'path';
 const fs = require('fs');
-const gitignoreParser = require('gitignore-parser');
-
 import fg = require('fast-glob')
 
 
@@ -28,7 +24,7 @@ export function getSettingsJSON(extensionName) {
   const workspaceConfig = vscode.workspace.getConfiguration(extensionName);
 
 
-  // console.log('Fallback to other workspace setting:', workspaceConfig);
+  // ('Fallback to other workspace setting:', workspaceConfig);
   return workspaceConfig;
 }
 

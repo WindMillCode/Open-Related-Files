@@ -49,3 +49,50 @@ and added InfiniteGlobString.createFileIfNotFoundPath on that so that the extens
 
 ## [1.85.1009] - 01-19-2024
 * [UPDATE]  added InfiniteGlobString.createFileRelativeToTrustedFilePath for the extension to dynamically create missing files and create folder structres relative to the files that already have been found
+
+## [1.85.2000] - 01-30-2024
+- Windmillcode Open Related Files - Context Menu Integration
+
+- Overview
+The Windmillcode Open Related Files extension now includes enhanced context menu integration within Visual Studio Code. This update brings all the essential commands of the extension directly to your fingertips while you're working in the editor or navigating through your project files.
+
+- Context Menu Actions
+
+- Editor Context Menu
+When you right-click in the editor, the following commands are now available:
+
+- **Open Related Files**
+  - **Command**: `windmillcode-open-related-files.openRelatedFiles`
+  - **When**: Available when there is an active text editor.
+  - **Group**: Navigation
+  - **Description**: Opens related files according to the default or selected option in the extension settings.
+
+- **Set Default Option**
+  - **Command**: `windmillcode-open-related-files.setDefaultOption`
+  - **When**: Available when there is an active text editor.
+  - **Group**: Navigation
+  - **Description**: Sets the default option for determining related files to work with.
+
+- **Toggle Auto Open**
+  - **Command**: `windmillcode-open-related-files.toggleAutoOpen`
+  - **When**: Available when there is an active text editor.
+  - **Group**: Navigation
+  - **Description**: Toggles the automatic opening of related files when switching to an unrelated file.
+
+- **Toggle Reset Layout**
+  - **Command**: `windmillcode-open-related-files.toggleResetLayout`
+  - **When**: Available when there is an active text editor.
+  - **Group**: Navigation
+  - **Description**: Toggles whether to reset the editor layout when selecting new files or to continue editing with the current file layout.
+
+- Explorer Context Menu
+In addition to the editor context menu, the following command is also available when you right-click on a file in the Explorer:
+
+- **Open Related Files**
+  - **Command**: `windmillcode-open-related-files.openRelatedFiles`
+  - **When**: Available when a file is selected in the Explorer.
+  - **Group**: Navigation
+  - **Description**: Opens related files for the selected file according to the configured settings.
+
+- Usage
+To use these commands, simply right-click in the editor or on a file in the Explorer and select the desired action from the context menu. Ensure that your `settings.json` is configured according to your project's requirements for optimal use of the Windmillcode Open Related Files extension.

@@ -69,7 +69,38 @@
         "command": "windmillcode-open-related-files.toggleResetLayout",
         "title": "Windmillcode Open Related Files: Toggle Reset Layout"
       }
-    ]
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "when": "editorTextFocus",
+          "command": "windmillcode-open-related-files.openRelatedFiles",
+          "group": "navigation"
+        },
+        {
+          "when": "editorTextFocus",
+          "command": "windmillcode-open-related-files.setDefaultOption",
+          "group": "navigation"
+        },
+        {
+          "when": "editorTextFocus",
+          "command": "windmillcode-open-related-files.toggleAutoOpen",
+          "group": "navigation"
+        },
+        {
+          "when": "editorTextFocus",
+          "command": "windmillcode-open-related-files.toggleResetLayout",
+          "group": "navigation"
+        }
+      ],
+      "explorer/context": [
+        {
+          "when": "resourceFilename",
+          "command": "windmillcode-open-related-files.openRelatedFiles",
+          "group": "navigation"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
