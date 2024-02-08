@@ -96,3 +96,7 @@ In addition to the editor context menu, the following command is also available 
 
 - Usage
 To use these commands, simply right-click in the editor or on a file in the Explorer and select the desired action from the context menu. Ensure that your `settings.json` is configured according to your project's requirements for optimal use of the Windmillcode Open Related Files extension.
+
+
+## [1.86.0] - 2-8-2024
+* [UPDATE]-  if there is a default options set Open command just opens without prompting for the option

@@ -161,7 +161,7 @@ async function openOrCreateAndOpenTextDoc(filePath, altPath) {
       // Try to create the file using fs.open with the 'w' flag
       const fileHandle = await fs.promises.open(createFile, 'w');
       await fileHandle.close();
-      
+
       return await vscode.workspace.openTextDocument(createFile);
     } catch (createError) {
       console.error(`Error creating file ${createFile}: ${createError}`);
@@ -281,7 +281,7 @@ export const openRelatedFiles = async (uri?: vscode.Uri) => {
       let chosenOption
       let autoOpen = await autoOpenSetting.get()
       let defaultOption = await defaultOptionSetting.get()
-      if(autoOpen && defaultOption){
+      if((defaultOption && defaultOption.name !== "Disable") || autoOpen ){
         chosenOption = defaultOption
       }
       else{
