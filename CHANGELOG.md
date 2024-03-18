@@ -100,3 +100,11 @@ To use these commands, simply right-click in the editor or on a file in the Expl
 
 ## [1.86.0] - 2-8-2024
 * [UPDATE]-  if there is a default options set Open command just opens without prompting for the option
+
+## [1.87.2000] - 3-18-2024
+* [UPDATE] Updated `@vscode/vsce` dependency version in `package.json`.
+* [PATCH] Removed `outFiles` configuration from `.vscode/launch.json`.
+* [PATCH] Enhanced type definition for `filesNames` in `openRelatedFiles.ts`.
+* [FEATURE] Added functionality to flatten file name arrays and check file existence in `openRelatedFiles.ts`.
+* [FEATURE] Implemented `checkFileExistence` function in `openRelatedFiles.ts`.
+

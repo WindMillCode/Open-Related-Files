@@ -81,11 +81,27 @@ const getFileNamesToSearchAndPathToIgnore = async (
       })
     })
   })
-  let filesNames = await Promise.all(filesNamesPromise)
+  let filesNames:Array<InfiniteGlobString> = await Promise.all(filesNamesPromise) as any
 
-  return filesNames.flat(Infinity)[0]
+  filesNames =  filesNames.flat(Infinity)
+  let fileExistencePromises = filesNames.map(async file => {
+    const exists = await checkFileExistence(file.filePath);
+    return exists ? file : null;
+  });
+  let results  = await Promise.all(fileExistencePromises);
+  return results.filter(file => file !== null)[0]
+
+
 
 }
+
+const checkFileExistence = (file) => {
+  return new Promise((resolve) => {
+    fs.access(file, fs.constants.F_OK, (err) => {
+      resolve(!err);
+    });
+  });
+};
 
 async function getAllFilesInSortedSections(
   chosenOption:WMLOpenRelatedFilesSettingsJSON["chosenOption"],
