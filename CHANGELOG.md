@@ -108,3 +108,11 @@ To use these commands, simply right-click in the editor or on a file in the Expl
 * [FEATURE] Added functionality to flatten file name arrays and check file existence in `openRelatedFiles.ts`.
 * [FEATURE] Implemented `checkFileExistence` function in `openRelatedFiles.ts`.
 
+
+## [1.87.2001] - 3-18-2024
+- [PATCH] Uncommented the "--profile-temp" argument in `.vscode/launch.json` to enable profile temperature logging.
+- [UPDATE] Refactored `getFileNamesToSearchAndPathToIgnore` in `openRelatedFiles.ts` to use a single options object for the `fg` function.
+- [PATCH] Changed the return logic in `getFileNamesToSearchAndPathToIgnore` to always return the first file name from `filesNames`.
+- [UPDATE] Modified `openOrCreateAndOpenTextDoc` to return `null` if `altPath` is null, undefined, or an empty string, preventing attempts to create or open invalid file paths.
+- [FIX] Removed error propagation in `openOrCreateAndOpenTextDoc` by commenting out the `throw createError` line, changing the method's failure handling strategy.
+- [UPDATE] Added a check in `openAndShowFile` to return early if the document is null, enhancing robustness against null values.

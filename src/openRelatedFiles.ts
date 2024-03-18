@@ -60,14 +60,15 @@ const getFileNamesToSearchAndPathToIgnore = async (
   let basicIgnorePatterns = chosenOption.excludeGlobs?? mySettingsJson.excludeGlobs
 
   let filesNamesPromise = targetPaths.map(async (targetPath)=>{
+    let fGOptions =       {
+      unique: true,
+      cwd: targetPath,
+      onlyFiles: true,
+      ignore: basicIgnorePatterns
+    }
     let filePaths = await fg(
       targetGlob.filePath,
-      {
-        unique: true,
-        cwd: targetPath,
-        onlyFiles: true,
-        ignore: basicIgnorePatterns
-      },
+      fGOptions
     )
     if(filePaths.length === 0){
       filePaths.push(path.basename(targetGlob.filePath))
@@ -89,7 +90,8 @@ const getFileNamesToSearchAndPathToIgnore = async (
     return exists ? file : null;
   });
   let results  = await Promise.all(fileExistencePromises);
-  return results.filter(file => file !== null)[0]
+  // return results.filter(file => file !== null)[0] ?? filesNames[0]
+  return filesNames[0]
 
 
 
@@ -168,7 +170,10 @@ async function openOrCreateAndOpenTextDoc(filePath, altPath) {
   } catch (error) {
     console.error(`Error opening ${filePath}: ${error}`);
     // Attempt to create the file if it doesn't exist
-    const createFile = path.join(getRootFolderUri().fsPath, altPath, path.basename(filePath));
+    if([null,undefined,""].includes(altPath)){
+      return null
+    }
+  const createFile = path.join(getRootFolderUri().fsPath, altPath, path.basename(filePath));
     const directory = path.dirname(createFile);
     try {
       // Ensure parent directories are created
@@ -181,7 +186,7 @@ async function openOrCreateAndOpenTextDoc(filePath, altPath) {
       return await vscode.workspace.openTextDocument(createFile);
     } catch (createError) {
       console.error(`Error creating file ${createFile}: ${createError}`);
-      throw createError; // Propagate the error
+      // throw createError; // Propagate the error
     }
   }
 }
@@ -190,6 +195,9 @@ async function openOrCreateAndOpenTextDoc(filePath, altPath) {
 const openAndShowFile = async (filePath,myViewColum?,section=[0,0,0,0],altPath?:string) => {
 
   let document = await openOrCreateAndOpenTextDoc(filePath,altPath);
+  if(document === null){
+    return
+  }
 
   let viewColumn = vscode.ViewColumn.One;
 
