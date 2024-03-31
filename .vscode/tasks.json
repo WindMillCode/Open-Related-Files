@@ -1,104 +1,47 @@
 // See https://go.microsoft.com/fwlink/?LinkId=733558
 // for the documentation about the tasks.json format
 {
-	"version": "2.0.0",
-	"tasks": [
+  "version": "2.0.0",
+  "tasks": [
+
 
     {
-      "label": "Pushing work to git remote",
       "type": "shell",
-      "command": "git add .;git commit -m'[UPDATE] additional work';git branch --unset-upstream;git push origin HEAD"
-    },
-
-		{
-			"type": "shell",
       "label": "npm: watch",
-			"command":"npm run compile;npm run watch",
-			"problemMatcher": "$tsc-watch",
-			"isBackground": true,
-			"presentation": {
-				"reveal": "never",
-				"panel": "dedicated"
-			},
-			"group": {
-				"kind": "build",
-				"isDefault": true
-			}
-		},
-		{
-			"type": "npm",
-			"script": "compile",
-			"problemMatcher": "$tsc",
-			"presentation": {
-				"reveal": "never",
-				"panel": "dedicated"
-			}
-		},
-    {
-      "label": "git: pushing work to git remote",
-      "type": "shell",
-      "windows": {
-        "command": "cd task_files\\go_scripts\\git_pushing_work_to_git_remote ; windmillcode_go run . "
+      "command": "npm run compile;npm run watch",
+      "problemMatcher": "$tsc-watch",
+      "isBackground": true,
+      "presentation": {
+        "reveal": "never",
+        "panel": "dedicated"
       },
-      "runOptions": {
-        "runOn": "",
-        "instanceLimit": 1
+      "group": {
+        "kind": "build",
+        "isDefault": true
       }
     },
     {
-      "label": "git: merge changes from current dev branch",
+      "type": "npm",
+      "script": "compile",
+      "problemMatcher": "$tsc",
+      "presentation": {
+        "reveal": "never",
+        "panel": "dedicated"
+      }
+    },
+
+    {
+      "label": "misc: rm all vsix",
       "type": "shell",
       "windows": {
-        "command": "cd task_files\\go_scripts\\git_merge_changes_from_current_dev_branch ; windmillcode_go run . "
-      },
-      "runOptions": {
-        "runOn": "",
-        "instanceLimit": 1
+        "command": "rm **.vsix"
       }
     },
-		{
-      "label":"misc: rm all vsix",
-      "type":"shell",
-      "windows":{
-        "command":"rm **.vsix"
-      }
-    },
-    {
-      "label": "misc: package project",
-      "type": "shell",
-      "dependsOn": "misc: rm all vsix",
-      "windows": {
-        "command": "git add .;git commit -m'[UPDATE] new version ${input:misc_package_project_0}';git push -u origin HEAD;npx vsce package ${input:misc_package_project_0};npx vsce publish ${input:misc_package_project_0};start explorer ."
-      }
-    },
-    {
-      "label": "misc: package project cmd",
-      "type": "shell",
-      "dependsOn": "misc: rm all vsix",
-      "command": "npx vsce package ${input:misc_package_project_0} && npx vsce publish ${input:misc_package_project_0} && start explorer .",
-      "windows": {
-        "options": {
-          "shell": {
-            "executable": "cmd.exe",
-            "args": ["/d", "/c"]
-          }
-        }
-      }
-    },
-		{
-      "label":"misc: make new go command",
-      "type":"shell",
-      "windows":{
-        "command":"cd .\\task_files\\go_scripts;cp -r template ${input:misc_make_new_command_0}"
-      }
-    },
-	],
-  "inputs":[
-    {
-      "id": "misc_package_project_0",
-      "description": "the version for the package",
-  "type": "promptString"
-    },
+
+
+  ],
+  "inputs": [
+
     {
       "id": "misc_make_new_command_0",
       "description": "name of the command",
