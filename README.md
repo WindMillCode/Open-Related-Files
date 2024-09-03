@@ -1,6 +1,3 @@
->
-
-
 # Windmillcode Open Related Files
 
 [Video Tutorial](https://www.youtube.com/watch?v=oPkuSxVS190)

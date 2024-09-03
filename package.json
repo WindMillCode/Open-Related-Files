@@ -6,7 +6,7 @@
   "publisher": "windmillcode-publisher-0",
   "icon": "images/logo.png",
   "repository": {
-    "url": "https://github.com/WindMillCode/vscode-extension-libraries"
+    "url": "https://github.com/WindMillCode/Open-Related-Files"
   },
   "engines": {
     "vscode": "^1.79.0"
