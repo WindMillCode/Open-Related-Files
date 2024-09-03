@@ -1,7 +1,5 @@
-<div class="aside">
 <div class="gfm-embed" data-url="https://www.gofundme.com/f/strengthen-our-business-to-take-on-bigger-initiati/widget/medium"></div>
-<script defer src="https://www.gofundme.com/static/js/embed.js"></script>
-</div>
+
 
 
 # Windmillcode Open Related Files
