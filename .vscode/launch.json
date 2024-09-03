@@ -15,7 +15,7 @@
         "--extensionDevelopmentPath=${workspaceRoot}"
       ],
       "sourceMaps": true,
-      "preLaunchTask": "npm: watch"
+      "preLaunchTask": "npm: compile"
     }
   ]
 }
